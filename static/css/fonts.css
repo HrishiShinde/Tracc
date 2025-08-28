@@ -1,0 +1,41 @@
+/* --- Josefin Sans --- */
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;700&family=Poiret+One&family=Caveat:wght@400;700&family=Rubik+Glitch&display=swap');
+
+/* --- Sreda --- */
+@font-face {
+    font-family: 'Sreda';
+    src: url("../fonts/sreda/Sreda.otf") format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Base font system */
+:root {
+  --bs-font-sans-serif: 'Josefin Sans', sans-serif;
+  --font-heading: "Poiret One", sans-serif;
+  --font-accent: 'Caveat', cursive;
+
+  /* --font-logo: 'Sreda', sans-serif;  */
+  --font-logo: "Rubik Glitch", system-ui;
+}
+
+/* Body  */
+body {
+  font-family: var(--bs-font-sans-serif);
+}
+
+/* Headings override */
+h1, h2, h3, h4, h5, h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  font-family: var(--font-heading);
+}
+
+/* Accent usage */
+.accent {
+  font-family: var(--font-accent);
+}
+
+/* Logo */
+.logo {
+  font-family: var(--font-logo);
+}

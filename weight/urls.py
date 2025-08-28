@@ -1,4 +1,5 @@
 from django.urls import path
+from django.shortcuts import redirect
 from . import views
 
 urlpatterns = [
@@ -13,4 +14,8 @@ urlpatterns = [
     path('logs/<int:pk>/edit/', views.add_or_edit_weight_log, name='edit_weight_log'),
     path('logs/<int:pk>/delete/', views.delete_weight_log, name='delete_weight_log'),
     path('clock_in/', views.add_or_edit_weight_log, name='clock_in'),
+    path('settings/', views.settings, name='settings'),
+    
+    # Catch-all empty path redirect
+    path('', lambda request: redirect('dashboard'), name='home_redirect'),
 ]

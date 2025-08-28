@@ -151,9 +151,8 @@ def add_or_edit_weight_log(request, pk=None):
 
         log.save()
         if not weight:
-            return render('dashboard')
+            return redirect('dashboard')
         return redirect('weightlog_list')  # ya dashboard, jahan se call ho raha hai
-
 
 
 @login_required
@@ -163,3 +162,8 @@ def delete_weight_log(request, pk):
     if request.method == 'POST':
         log.delete()
         return redirect('weightlog_list')
+
+# ---------- Settings ----------
+@login_required
+def settings(request):
+    return render(request, 'dashboard/settings.html')

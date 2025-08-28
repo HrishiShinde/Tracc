@@ -1,0 +1,450 @@
+/* =====================
+   Global transitions
+   ===================== */
+* {
+  transition: 
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* =====================
+   THEME: Serene Teal
+   ===================== */
+[data-theme-family="serene"][data-bs-theme="light"] {
+  --bg-color: #F6FDFF;
+  --text-color: #0A2530;
+  --accent-color: #0F9D9A;
+  --card-color: #FFFFFF;
+  --navbar-color: #EAFBFB;
+  --success-color: #2E8B57;
+  --danger-color: #E74C3C;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="serene"][data-bs-theme="dark"] {
+  --bg-color: #071E22;
+  --text-color: #E6F7F6;
+  --accent-color: #26C6C0;
+  --card-color: #0E2A2D;
+  --navbar-color: #093033;
+  --success-color: #4CCB8A;
+  --danger-color: #FF7A75;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+/* =====================
+   THEME: Dusky Rose
+   ===================== */
+[data-theme-family="dusky"][data-bs-theme="light"] {
+  --bg-color: #FFF7F8;
+  --text-color: #2D1523;
+  --accent-color: #C45D8E;
+  --card-color: #FFFFFF;
+  --navbar-color: #FFEFF2;
+  --success-color: #4CAF50;
+  --danger-color: #D9534F;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="dusky"][data-bs-theme="dark"] {
+  --bg-color: #120811;
+  --text-color: #FFEFF4;
+  --accent-color: #F07BA4;
+  --card-color: #1C0F15;
+  --navbar-color: #2A1420;
+  --success-color: #66D187;
+  --danger-color: #FF8A80;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+/* =====================
+   THEME: Midnight Mint
+   ===================== */
+[data-theme-family="midnight"][data-bs-theme="light"] {
+  --bg-color: #FBFEFF;
+  --text-color: #042527;
+  --accent-color: #005B5B;
+  --card-color: #FFFFFF;
+  --navbar-color: #E9FDFE;
+  --success-color: #2ECC71;
+  --danger-color: #E74C3C;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="midnight"][data-bs-theme="dark"] {
+  --bg-color: #010409;
+  --text-color: #E6FFF9;
+  --accent-color: #00D3C2;
+  --card-color: #071122;
+  --navbar-color: #0D1C2E;
+  --success-color: #49E48D;
+  --danger-color: #FF6B6B;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+/* =====================
+   THEME: Classic Clean
+   ===================== */
+[data-theme-family="classic"][data-bs-theme="light"] {
+  --bg-color: #FAFBFC;
+  --text-color: #0F1724;
+  --accent-color: #2B6CB0;
+  --card-color: #FFFFFF;
+  --navbar-color: #EDF2F7;
+  --success-color: #2E8B57;
+  --danger-color: #E53E3E;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="classic"][data-bs-theme="dark"] {
+  --bg-color: #081224;
+  --text-color: #EAF2FF;
+  --accent-color: #67A8E4;
+  --card-color: #0F1724;
+  --navbar-color: #16233C;
+  --success-color: #4CCB8A;
+  --danger-color: #FF7A75;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+/* =====================
+   THEME: Onyx Glow
+   ===================== */
+[data-theme-family="onyx-glow"][data-bs-theme="light"] {
+  --bg-color: #FBF8F5;
+  --text-color: #071516;
+  --accent-color: #0F9D9A;      /* primary CTA (teal) */
+  --accent-yellow: #F2C94C;     /* yellow for badges / glows */
+  --card-color: #FFFFFF;
+  --navbar-color: #F3EFEA;
+  --success-color: #2E8B57;
+  --danger-color: #E74C3C;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="onyx-glow"][data-bs-theme="dark"] {
+  --bg-color: #050505;
+  --text-color: #E9F8F6;
+  --accent-color: #26C6B6;      /* primary CTA (teal pop) */
+  --accent-yellow: #F2C94C;     /* yellow as glow/goal marker */
+  --card-color: #0B0B0B;
+  --navbar-color: #0B0B0B;
+  --success-color: #4CCB8A;
+  --danger-color: #FF7A75;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+
+/* =====================
+   THEME: Charcoal Canary
+   ===================== */
+[data-theme-family="charcoal-canary"][data-bs-theme="light"] {
+  --bg-color: #F7F6F2;
+  --text-color: #0F1724;
+  --accent-color: #2E3A8C;      /* deep indigo for CTAs */
+  --accent-yellow: #FFD05B;     /* canary for highlights */
+  --card-color: #FFFFFF;
+  --navbar-color: #F0F1F3;
+  --success-color: #2E8B57;
+  --danger-color: #E53E3E;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="charcoal-canary"][data-bs-theme="dark"] {
+  --bg-color: #0D0D10;
+  --text-color: #F2F5FF;
+  --accent-color: #7F8CFF;      /* lighter indigo for contrast on dark */
+  --accent-yellow: #FFD05B;     /* use slightly desaturated/opac on dark */
+  --card-color: #141417;
+  --navbar-color: #141417;
+  --success-color: #49E48D;
+  --danger-color: #FF6B6B;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+
+/* =====================
+   THEME: Gold Ember
+   ===================== */
+[data-theme-family="gold-ember"][data-bs-theme="light"] {
+  --bg-color: #FFF8F1;
+  --text-color: #102A2B;
+  --accent-color: #264653;      /* deep slate/teal for CTAs */
+  --accent-yellow: #FFC857;     /* amber for streaks/goal chips */
+  --card-color: #FFFDF8;
+  --navbar-color: #FFF6EE;
+  --success-color: #2E8B57;
+  --danger-color: #E53E3E;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-yellow);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+  --logo-color: var(--accent-yellow);
+}
+[data-theme-family="gold-ember"][data-bs-theme="dark"] {
+  --bg-color: #070606;
+  --text-color: #E6F6F4;
+  --accent-color: #3DD6C8;      /* teal pop for dark CTAs */
+  --accent-yellow: #FFC857;     /* amber used as gradients/goal rings */
+  --card-color: #101112;
+  --navbar-color: #101112;
+  --success-color: #4CCB8A;
+  --danger-color: #FF7A75;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-yellow);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+  --logo-color: var(--accent-yellow);
+}
+
+
+/* =====================
+   THEME: Sunset Noir
+   ===================== */
+[data-theme-family="sunset-noir"][data-bs-theme="light"] {
+  --bg-color: #FBF7F6;
+  --text-color: #0E0B14;
+  --accent-color: #6B46C1;      /* muted violet for CTAs */
+  --accent-yellow: #F6D860;     /* honey yellow for tiny warmth */
+  --card-color: #FFFFFF;
+  --navbar-color: #FBF7F6;
+  --success-color: #2E8B57;
+  --danger-color: #E53E3E;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+[data-theme-family="sunset-noir"][data-bs-theme="dark"] {
+  --bg-color: #04040A;
+  --text-color: #FAF7FF;
+  --accent-color: #A892FF;      /* lighter violet for dark CTAs */
+  --accent-yellow: #F6D860;     /* honey as subtle marker */
+  --card-color: #0E0C13;
+  --navbar-color: #0E0C13;
+  --success-color: #4CCB8A;
+  --danger-color: #FF7A75;
+
+  --bs-body-bg: var(--bg-color);
+  --bs-body-color: var(--text-color);
+  --bs-primary: var(--accent-color);
+  --bs-success: var(--success-color);
+  --bs-danger: var(--danger-color);
+  --bs-card-bg: var(--card-color);
+  --bs-navbar-bg: var(--navbar-color);
+}
+
+
+/* =====================
+   Components Override
+   ===================== */
+body {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+.card {
+  background-color: var(--card-color) !important;
+  color: var(--text-color) !important;
+}
+
+.navbar {
+  background-color: var(--navbar-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* =====================
+   Buttons
+   ===================== */
+.btn-primary {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  color: #fff !important;
+}
+.btn-primary:hover {
+  filter: brightness(90%);
+}
+
+.btn-success {
+  background-color: var(--bs-success) !important;
+  border-color: var(--bs-success) !important;
+  color: #fff !important;
+}
+.btn-success:hover {
+  filter: brightness(85%);
+}
+
+.btn-danger {
+  background-color: var(--bs-danger) !important;
+  border-color: var(--bs-danger) !important;
+  color: #fff !important;
+}
+.btn-danger:hover {
+  filter: brightness(85%);
+}
+
+/* Smaller custom buttons */
+.btn-warning {
+  background-color: var(--bs-success) !important;
+  border: none;
+  color: #fff !important;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+}
+.btn-warning:hover {
+  filter: brightness(85%);
+}
+
+.btn-delete {
+  background-color: var(--bs-danger) !important;
+  border: none;
+  color: #fff !important;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+}
+.btn-delete:hover {
+  filter: brightness(85%);
+}
+
+/* =====================
+   Form Elements
+   ===================== */
+
+/* Select dropdown */
+.form-select {
+  background-color: var(--card-color) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--bs-primary) !important;
+}
+.form-select:focus {
+  border-color: var(--bs-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.05) !important;
+}
+
+
+/* Switches */
+.form-check-input {
+  background-color: var(--card-color) !important;
+  border: 1px solid var(--bs-primary) !important;
+}
+.form-check-input:checked {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+}
+.form-check-label {
+  color: var(--text-color) !important;
+}
+
+
+/* Button group radios (settings mode toggle) */
+.btn-outline-primary {
+  color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  background-color: transparent !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--bs-primary) !important;
+  color: #fff !important;
+}
+.btn-check:checked + .btn-outline-primary {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  color: #fff !important;
+}
+
+/* Logo */
+.logo {
+  color: var(--logo-color) !important;
+}

@@ -1,0 +1,78 @@
+{% extends 'layout/base.html' %}
+{% block title %}Tracc | Settings{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Settings</h2>
+            </div>
+
+            <!-- Theme Section -->
+            <div class="mb-5">
+                <h5 class="fw-semibold mb-3">Appearance</h5>
+                <div class="row g-3 align-items-center">
+
+                    <!-- Theme Select -->
+                    <div class="col-12">
+                        <label for="themeSelect" class="form-label">Theme</label>
+                        <select id="themeSelect" class="form-select theme-select">
+                            <option value="classic">Classic Clean</option>
+                            <option value="serene">Serene Teal</option>
+                            <option value="dusky">Dusky Rose</option>
+                            <option value="midnight">Midnight Mint</option>
+                            <option value="onyx-glow">Onyx Glow</option>
+                            <option value="charcoal-canary">Charcoal Canary</option>
+                            <option value="gold-ember">Gold Ember</option>
+                            <option value="sunset-noir">Sunset Noir</option>
+                        </select>
+                    </div>
+
+                    <!-- Light/Dark Toggle -->
+                    <div class="col-12">
+                        <label class="form-label d-block">Mode</label>
+                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="btnradio1">
+                                <i class="bi bi-sun"></i> Light
+                            </label>
+
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="btnradio2">
+                                <i class="bi bi-moon"></i> Dark
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Notifications -->
+            <div class="mb-4">
+                <h5 class="fw-semibold mb-3">Notifications</h5>
+                <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="dailyReminder" checked>
+                <label class="form-check-label" for="dailyReminder">Daily weight reminder</label>
+                </div>
+                <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="weeklySummary">
+                <label class="form-check-label" for="weeklySummary">Weekly progress summary</label>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Account Section -->
+            <div class="mb-2">
+                <h5 class="fw-semibold mb-3">Account</h5>
+                <button class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
