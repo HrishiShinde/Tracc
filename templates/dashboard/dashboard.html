@@ -1,0 +1,103 @@
+{% extends 'layout/base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <h2 class="mb-4 text-center">Welcome, {{ request.user.username }}!</h2>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card text-center p-3">
+                    <h5>Current Weight</h5>
+                    <p class="fs-4">{{ profile.current_weight|default:"-" }} kg</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card text-center p-3">
+                    <h5>Target Weight</h5>
+                    <p class="fs-4">{{ profile.target_weight|default:"-" }} kg</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card text-center p-3">
+                    <h5>BMI</h5>
+                    <p class="fs-4">{{ profile.bmi|default:"-" }}</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card text-center p-3">
+                    <h5>Progress</h5>
+                    <p class="fs-4">{{ profile.progress_percentage|default:"-" }}%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            {% if today_log and today_log.check_in %}
+                <button class="btn btn-success" disabled>✅ Clocked In Today</button>
+                <p>Checked in at {{ today_log.check_in_at|date:"H:i" }}</p>
+            {% else %}
+                <form method="POST" action="{% url 'clock_in' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="check_in" value="true">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-alarm"></i> Clock In Today
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
+        <!-- Recent Logs -->
+        <h4 class="mb-3">Recent Weight Logs</h4>
+        <ul class="list-group mb-4">
+            {% for log in recent_logs %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ log.date }} - {{ log.weight }} kg</span>
+                {% if log.notes %}<span>{{ log.notes }}</span>{% endif %}
+            </li>
+            {% empty %}
+            <li class="list-group-item">No logs yet. Add your first one!</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Placeholder for future charts -->
+        <div class="card p-3">
+            <h5>Progress Chart (Coming Soon)</h5>
+            <canvas id="progressChart" style="width:100%; height:200px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Floating Add Button -->
+    <button 
+        class="btn btn-primary rounded-circle shadow-lg"
+        style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px;"
+        data-bs-toggle="modal" data-bs-target="#addEditModal"
+        onclick="openAddModal()"
+    >    
+        <i class="bi bi-plus-lg"></i>
+    </button>
+</div>
+
+<!-- Optional Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var ctx = document.getElementById('progressChart').getContext('2d');
+var progressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [], // TODO: populate with dates
+        datasets: [{
+            label: 'Weight',
+            data: [], // TODO: populate with weights
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+{% endblock %}

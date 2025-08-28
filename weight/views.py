@@ -1,0 +1,165 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth.models import User
+from .models import Profile, WeightLog
+from django.utils import timezone
+
+# ---------- Register ----------
+def register_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+        password2 = request.POST['password2']
+        
+        if password != password2:
+            messages.error(request, "Passwords do not match!")
+            return redirect('register')
+        if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
+            messages.error(request, "Username already exists!")
+            return redirect('register')
+        
+        user = User.objects.create_user(username=username, password=password)
+        Profile.objects.create(user=user)
+        messages.success(request, "Account created! Login now!")
+        return redirect('login')
+    
+    return render(request, 'auth/register.html')
+
+
+# ---------- Login ----------
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('redirect_after_login')
+        else:
+            messages.error(request, "Invalid credentials!")
+            return redirect('login')
+    
+    return render(request, 'auth/login.html')
+
+
+# ---------- Logout ----------
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
+def redirect_after_login(request):
+    profile = request.user.profile
+    if not profile.height_cm or not profile.target_weight:
+        return redirect('get_more_data')
+    return redirect('dashboard')
+
+
+@login_required
+def get_more_data(request):
+    profile = request.user.profile
+    if request.method == 'POST':
+        height = request.POST.get('height_cm')
+        current_weight = request.POST.get('current_weight')
+        target_weight = request.POST.get('target_weight')
+        dob = request.POST.get('dob')
+
+        profile.height_cm = height
+        profile.target_weight = target_weight
+        profile.dob = dob if dob else None
+        profile.save()
+
+        # Save first weight log
+        if current_weight:
+            WeightLog.objects.create(profile=profile, weight=current_weight)
+
+        return redirect('dashboard')
+
+    return render(request, 'profile/get_more_data.html', {'profile': profile})
+
+
+# ---------- Dashboard ----------
+@login_required
+def dashboard(request):
+    profile = request.user.profile
+    today = timezone.localdate()
+    
+    # Today's log for Clock In.
+    today_log = profile.weightlog_set.filter(date=today).first()
+
+    # Fetch logs.
+    latest_log = profile.weightlog_set.order_by('-date').first()
+    recent_logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('-date')
+
+    bmi = None
+    progress = None
+    latest_weight_log = profile.weightlog_set.exclude(weight__isnull=True).order_by('-date').first()
+    latest_weight = latest_weight_log.weight if latest_weight_log else 0
+    if profile.height_cm and latest_log:
+        height_m = profile.height_cm / 100
+        bmi = round(latest_weight / (height_m ** 2), 2)
+    if profile.target_weight and latest_log:
+        start_weight = recent_logs.last().weight if recent_logs else latest_weight
+        progress = round(((start_weight - latest_weight) / (start_weight - profile.target_weight)) * 100, 2)
+
+    context = {
+        'profile': profile,
+        'latest_log': latest_log,
+        'recent_logs': recent_logs[:5],
+        'bmi': bmi,
+        'progress': progress,
+        'today_log': today_log
+    }
+    return render(request, 'dashboard/dashboard.html', context)
+
+
+@login_required
+def weightlog_list(request):
+    logs = request.user.profile.weightlog_set.all()
+    return render(request, 'logs/weightlog_list.html', {'logs': logs})
+
+
+@login_required
+def add_or_edit_weight_log(request, pk=None):
+    profile = request.user.profile
+    today = timezone.localdate()
+
+    # POST check
+    if request.method == 'POST':
+        weight = request.POST.get('weight')
+        notes = request.POST.get('notes', '')
+        check_in = request.POST.get('check_in') == 'true'  # button sends 'true' if clicked
+
+        if pk:
+            # Editing existing log
+            log = get_object_or_404(profile.weightlog_set, pk=pk)
+        else:
+            # Add new log OR get today's log if check_in
+            log, created = WeightLog.objects.get_or_create(profile=profile, date=today)
+
+        # Update fields
+        if weight:
+            log.weight = weight
+        log.notes = notes
+
+        if check_in:
+            log.check_in = True
+            log.check_in_at = timezone.now()
+
+        log.save()
+        if not weight:
+            return render('dashboard')
+        return redirect('weightlog_list')  # ya dashboard, jahan se call ho raha hai
+
+
+
+@login_required
+def delete_weight_log(request, pk):
+    log = get_object_or_404(request.user.profile.weightlog_set, pk=pk)
+    
+    if request.method == 'POST':
+        log.delete()
+        return redirect('weightlog_list')
