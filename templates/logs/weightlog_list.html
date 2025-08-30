@@ -1,5 +1,5 @@
 {% extends 'layout/base.html' %}
-{% block title %}My Weight Logs{% endblock %}
+{% block title %}Tracc | My Weight Logs{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -7,9 +7,9 @@
         <h2 class="mb-4 text-center">My Weight Logs</h2>
 
         <!-- Add Log Button -->
-        <div class="text-end mb-3">
+        <!-- <div class="text-end mb-3">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEditModal" onclick="openAddModal()">+ Add New Log</button>
-        </div>
+        </div> -->
 
         <!-- Logs List -->
         <ul class="list-group">
@@ -21,13 +21,17 @@
                 </div>
                 <div>
                     <button 
-                        class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#addEditModal"
+                        class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#addEditModal"
                         onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
-                    >Edit</button>
+                    >
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
                     <button 
-                        class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
-                        onclick="openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
-                    >Delete</button>
+                    class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                    onclick="openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
+                    >
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </li>
             {% empty %}
