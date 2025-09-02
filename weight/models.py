@@ -3,10 +3,17 @@ from django.contrib.auth.models import User
 from datetime import date
 
 class Profile(models.Model):
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     height_cm = models.FloatField(blank=True, null=True)
     dob = models.DateField(blank=True, null=True)
     target_weight = models.FloatField(blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
     
     def bmi(self, current_weight=None):
         weight = current_weight if current_weight else self.current_weight()

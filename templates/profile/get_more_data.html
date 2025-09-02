@@ -1,13 +1,30 @@
 {% extends 'layout/base.html' %}
-{% block title %}Tracc | Complete Your Profile{% endblock %}
+{% block title %}
+    {% if is_update %}Update Your Profile{% else %}Complete Your Profile{% endif %} | Tracc
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-sm-10 col-md-6 col-lg-4">
-        <h2 class="mb-4 text-center">Complete Your Profile</h2>
+        <h2 class="mb-4 text-center">
+            {% if is_update %}
+                Update Profile
+            {% else %}
+                Complete Your Profile
+            {% endif %}
+        </h2>
 
         <form method="POST">
             {% csrf_token %}
+            <div class="mb-3">
+                <label for="gender" class="form-label">Gender</label>
+                <select name="gender" id="gender" class="form-select">
+                    <option value="" {% if not profile.gender %}selected{% endif %}>Select Gender</option>
+                    <option value="M" {% if profile.gender == "M" %}selected{% endif %}>Male</option>
+                    <option value="F" {% if profile.gender == "F" %}selected{% endif %}>Female</option>
+                    <option value="O" {% if profile.gender == "O" %}selected{% endif %}>Other</option>
+                </select>
+            </div>
             
             <div class="mb-3">
                 <label for="height_cm" class="form-label">Height (cm)</label>
@@ -15,11 +32,13 @@
                        value="{{ profile.height_cm|default:'' }}">
             </div>
 
+            {% if not is_update %}
             <div class="mb-3">
                 <label for="current_weight" class="form-label">Current Weight (kg)</label>
                 <input type="number" step="0.1" name="current_weight" class="form-control" id="current_weight" required
                        value="{{ profile.current_weight|default:'' }}">
             </div>
+            {% endif %}
 
             <div class="mb-3">
                 <label for="target_weight" class="form-label">Target Weight (kg)</label>
