@@ -3,8 +3,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+
 from .models import Profile, WeightLog
 from django.utils import timezone
+from django.db import connection
 
 # ---------- Register ----------
 def register_view(request):
@@ -121,7 +124,7 @@ def dashboard(request):
         'bmi': bmi,
         'progress': progress,
         'today_log': today_log,
-        'clock_in_time': today_log.check_in_at.isoformat() if today_log else None,
+        'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
     }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -181,3 +184,36 @@ def delete_weight_log(request, pk):
 @login_required
 def settings(request):
     return render(request, 'dashboard/settings.html')
+
+
+def health_view(request):
+    db_status = False
+    try:
+        # Just test if DB responds
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+        db_status = True
+    except Exception:
+        db_status = False
+
+    context = {
+        "db_status": db_status,
+        "checked_at": timezone.now(),
+    }
+    print(context)
+    return render(request, "dashboard/health.html", context)
+
+def health_json(request):
+    db_status = False
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+        db_status = True
+    except Exception:
+        db_status = False
+
+    return JsonResponse({
+        "status": "ok" if db_status else "error",
+        "database": db_status,
+        "checked_at": timezone.now().isoformat(),
+    })

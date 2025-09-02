@@ -37,7 +37,7 @@
 
         <!-- Clock in -->
         <div class="text-center mb-4">
-            {% if today_log and today_log.check_in %}
+            {% if clock_in_time %}
                 <button class="btn btn-primary" disabled>
                     Clocked In at <span id="clock-in-time" data-utc="{{ clock_in_time }}"></span>
                 </button>

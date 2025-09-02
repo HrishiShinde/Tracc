@@ -28,4 +28,8 @@ urlpatterns = [
     
     # Catch-all empty path redirect
     path('', lambda request: redirect('dashboard'), name='home_redirect'),
+
+    # Health.
+    path("health/", views.health_view, name="health_page"),
+    path("healthz/", views.health_json, name="health_json"),
 ]

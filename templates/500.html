@@ -1,0 +1,9 @@
+{% extends "layout/base.html" %}
+{% block title %}Oops! Something went wrong{% endblock %}
+{% block content %}
+    <div class="error-page text-center p-5">
+        <h1 class="text-danger">500</h1>
+        <p>We're experiencing an unexpected error. Please try again later.</p>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+{% endblock %}
