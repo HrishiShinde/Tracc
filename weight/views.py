@@ -51,6 +51,7 @@ def logout_view(request):
     return redirect('login')
 
 
+# ---------- Redirect ----------
 def redirect_after_login(request):
     profile = request.user.profile
     if not profile.height_cm or not profile.target_weight:
@@ -58,27 +59,35 @@ def redirect_after_login(request):
     return redirect('dashboard')
 
 
+# ---------- Complete your Profile ----------
 @login_required
 def get_more_data(request):
     profile = request.user.profile
+    is_update = request.path.endswith('update-profile/')
+
     if request.method == 'POST':
+        gender = request.POST.get('gender')
         height = request.POST.get('height_cm')
         current_weight = request.POST.get('current_weight')
         target_weight = request.POST.get('target_weight')
         dob = request.POST.get('dob')
 
+        profile.gender = gender
         profile.height_cm = height
         profile.target_weight = target_weight
         profile.dob = dob if dob else None
         profile.save()
 
         # Save first weight log
-        if current_weight:
+        if current_weight and not is_update:
             WeightLog.objects.create(profile=profile, weight=current_weight)
 
-        return redirect('dashboard')
+        if is_update:
+            return redirect('settings')
+        else:
+            return redirect('dashboard')
 
-    return render(request, 'profile/get_more_data.html', {'profile': profile})
+    return render(request, 'profile/get_more_data.html', {'profile': profile, 'is_update':is_update})
 
 
 # ---------- Dashboard ----------
@@ -111,17 +120,20 @@ def dashboard(request):
         'recent_logs': recent_logs[:5],
         'bmi': bmi,
         'progress': progress,
-        'today_log': today_log
+        'today_log': today_log,
+        'clock_in_time': today_log.check_in_at.isoformat() if today_log else None,
     }
     return render(request, 'dashboard/dashboard.html', context)
 
 
+# ---------- Logs ----------
 @login_required
 def weightlog_list(request):
     logs = request.user.profile.weightlog_set.all()
     return render(request, 'logs/weightlog_list.html', {'logs': logs})
 
 
+# ---------- Add or Edit Logs ----------
 @login_required
 def add_or_edit_weight_log(request, pk=None):
     profile = request.user.profile
@@ -155,6 +167,7 @@ def add_or_edit_weight_log(request, pk=None):
         return redirect('weightlog_list')  # ya dashboard, jahan se call ho raha hai
 
 
+# ---------- Delete Logs ----------
 @login_required
 def delete_weight_log(request, pk):
     log = get_object_or_404(request.user.profile.weightlog_set, pk=pk)
@@ -162,6 +175,7 @@ def delete_weight_log(request, pk):
     if request.method == 'POST':
         log.delete()
         return redirect('weightlog_list')
+
 
 # ---------- Settings ----------
 @login_required
