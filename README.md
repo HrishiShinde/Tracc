@@ -1,65 +1,51 @@
-
 # 🏋️‍♂️ Tracc – Your Personal Weight Tracker
 
-**Tracc** is a sleek and intuitive weight tracking app designed to help you monitor your progress, stay motivated, and build healthy habits. Whether you’re starting a fitness journey or maintaining your routine, Tracc makes it simple, fun, and aesthetic.
+[👉 Try Tracc Live](https://tracc-crht.onrender.com/)
+
+**Tracc** is a clean and intuitive weight tracking app that helps you monitor your progress, stay motivated, and build sustainable healthy habits. Whether you’re starting your fitness journey or maintaining your routine, Tracc makes it effortless, motivating, and aesthetic.  
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-**Daily Weight Logging**  
-  Quickly add your weight and optional notes about workouts, meals, or mood.
-
-**Dashboard Overview**  
-  Visualize your current weight, target, BMI, and overall progress at a glance.
-
-**Progress Cards & Analytics**  
-  Track streaks, weekly trends, and see how close you are to your goals.
-
-**Multiple Themes**  
-  Switch between Light and Dark modes with accent colors for a personalized vibe.
-
-**Quick Add Button**  
-  Log today’s weight in just a couple of taps — perfect for busy days.
-
-**Motivation Mode**  
-  Choose your style of nudges: supportive, strict, or neutral to keep you accountable.
-
-**Achievements & Badges**  
-  Celebrate milestones like consecutive logging days or reaching target weight.
+- **Daily Weight Logging** – Quickly log your weight and add optional notes about workouts, meals, or mood.  
+- **Dashboard Overview** – Visualize your current weight, target, BMI, and overall progress in one place.  
+- **Progress & Analytics** – Track streaks, weekly trends, and progress towards your goals.  
+- **Multiple Themes** – Switch between Light/Dark modes with accent colors to match your style.  
+- **Quick Add Button** – Log today’s weight in just a couple of taps — perfect for busy days.  
+- **Motivation Mode** – Get supportive, strict, or neutral nudges to keep you accountable.  
+- **Achievements & Badges** – Celebrate milestones like consecutive logging days or reaching your target weight.  
 
 ---
 
 ## 🚀 How It Works
 
-1. **Sign Up / Login** – Create your account and set your starting weight and target.  
-2. **Log Daily** – Add your weight and notes in seconds.  
-3. **Track Progress** – View your dashboard for an overview of trends and streaks.  
-4. **Stay Motivated** – Get insights, motivational messages, and celebrate your milestones.
+1. **Sign Up / Log In** – Create your account and set your starting weight and target.  
+2. **Log Daily** – Add your weight and optional notes in seconds.  
+3. **Track Progress** – Check your dashboard for trends, analytics, and streaks.  
+4. **Stay Motivated** – Receive motivational insights and celebrate achievements.  
 
 ---
 
-## 🛠 Built With
+## 🛠 Tech Stack
 
-**Backend:** Django  
-**Database:** PostgreSQL  
-**Frontend:** HTML, CSS, Bootstrap  
-**Deployment:** Render  
+- **Backend:** Django  
+- **Database:** PostgreSQL  
+- **Frontend:** HTML, CSS, Bootstrap  
+- **Deployment:** Render  
 
 ---
 
-## 🚀 Getting Started
+## ⚡ Getting Started (Local Setup)
 
-Follow these steps to set up **Tracc** locally:
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/tracc.git
+### 1. Clone the Repository
+'bash
+git clone https://github.com/HrishiShinde/tracc.git
 cd tracc
-```
+'
 
-### 2. Create and activate a virtual environment
-```bash
+### 2. Create & Activate Virtual Environment
+'bash
 # macOS/Linux
 python -m venv venv
 source venv/bin/activate
@@ -67,26 +53,36 @@ source venv/bin/activate
 # Windows
 python -m venv venv
 venv\Scripts\activate
-```
-### 3. Install dependencies
-```bash
+'
+
+### 3. Install Dependencies
+'bash
 pip install -r requirements.txt
-```
+'
 
-### 4. Apply database migrations
-```bash
+### 4. Run Migrations
+'bash
 python manage.py migrate
-```
+'
 
-### 5. Run the development server
-```bash
+### 5. Start the Development Server
+'bash
 python manage.py runserver
-```
+'
 
-### 6. Access the app
-
-Open your browser and go to: http://127.0.0.1:8000/
+### 6. Open in Browser
+'
+http://127.0.0.1:8000/
+'
 
 ---
 
-Tracc is designed to be simple, aesthetic, and motivating — your personal companion for staying on track and reaching your fitness goals.
+## 📌 About
+
+Tracc is designed to be **simple, aesthetic, and motivating** — your personal companion for staying on track and achieving your fitness goals.  
+
+---
+
+## 🌐 Live App
+
+[👉 Click here to use Tracc](https://tracc-crht.onrender.com/)
