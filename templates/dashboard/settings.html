@@ -75,6 +75,23 @@
 
             <hr>
 
+            <!-- Import Logs -->
+            <div class="mb-5">
+                <h5 class="fw-semibold mb-3">Import your old data</h5>
+                <form method="POST" enctype="multipart/form-data" action="{% url 'import_logs' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="csvFile" class="form-label">Upload Google Sheet CSV</label>
+                        <input class="form-control" type="file" name="csv_file" id="csvFile" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-upload"></i> Import Logs
+                    </button>
+                </form>
+            </div>
+
+            <hr>
+
             <!-- Account Section -->
             <div class="mb-2">
                 <h5 class="fw-semibold mb-3">Account</h5>

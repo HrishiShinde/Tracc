@@ -22,11 +22,21 @@
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="card text-center p-3">
+                <div 
+                    class="card text-center p-3 {{ bmi_data.style }}"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                    data-bs-custom-class="{{ bmi_data.style }}"
+                    data-bs-title="{{ bmi_data.class }}"
+                >
                     <h5>BMI</h5>
-                    <p class="fs-4">{{ profile.bmi|default:"-" }}</p>
+                    {% if bmi_data.value %}
+                        <p class="fs-4">{{ bmi_data.value }}</p>
+                    {% else %}
+                        <p class="fs-4 text-muted">-</p>
+                    {% endif %}
                 </div>
             </div>
+
             <div class="col-6 col-md-3">
                 <div class="card text-center p-3">
                     <h5>Progress</h5>

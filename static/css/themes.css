@@ -1,6 +1,15 @@
-/* =====================
-   THEME: Serene Teal
-   ===================== */
+/*
+=====================
+  THEME: Serene Teal
+===================== 
+*/
+[data-theme-family="serene"] {
+  --bmi-underweight: #1ba098;
+  --bmi-normal: #2ecc71;
+  --bmi-overweight: #f1c40f;
+  --bmi-obese: #e74c3c;
+
+}
 [data-theme-family="serene"][data-bs-theme="light"] {
   --bg-color: #F6FDFF;
   --text-color: #0A2530;
@@ -36,9 +45,17 @@
   --bs-navbar-bg: var(--navbar-color);
 }
 
-/* =====================
-   THEME: Dusky Rose
-   ===================== */
+/*
+=====================
+  THEME: Dusky Rose
+===================== 
+*/
+[data-theme-family="dusky"] {
+  --bmi-underweight: #a569bd;
+  --bmi-normal: #58d68d;
+  --bmi-overweight: #f39c12;
+  --bmi-obese: #c0392b;
+}
 [data-theme-family="dusky"][data-bs-theme="light"] {
   --bg-color: #FFF7F8;
   --text-color: #2D1523;
@@ -74,9 +91,17 @@
   --bs-navbar-bg: var(--navbar-color);
 }
 
-/* =====================
-   THEME: Midnight Mint
-   ===================== */
+/*
+=====================
+  THEME: Midnight Mint
+===================== 
+*/
+[data-theme-family="midnight"] {
+  --bmi-underweight: #5dade2;
+  --bmi-normal: #27ae60;
+  --bmi-overweight: #f39c12;
+  --bmi-obese: #e74c3c;
+}
 [data-theme-family="midnight"][data-bs-theme="light"] {
   --bg-color: #FBFEFF;
   --text-color: #042527;
@@ -112,9 +137,17 @@
   --bs-navbar-bg: var(--navbar-color);
 }
 
-/* =====================
-   THEME: Classic Clean
-   ===================== */
+/*
+=====================
+  THEME: Classic Clean
+===================== 
+*/
+[data-theme-family="classic"] {
+  --bmi-underweight: #0d6efd;
+  --bmi-normal: #198754;
+  --bmi-overweight: #ffc107;
+  --bmi-obese: #dc3545;
+}
 [data-theme-family="classic"][data-bs-theme="light"] {
   --bg-color: #FAFBFC;
   --text-color: #0F1724;
@@ -150,9 +183,17 @@
   --bs-navbar-bg: var(--navbar-color);
 }
 
-/* =====================
-   THEME: Onyx Glow
-   ===================== */
+/*
+=====================
+  THEME: Onyx Glow
+===================== 
+*/
+[data-theme-family="onyx-glow"] {
+  --bmi-underweight: #76d7c4;
+  --bmi-normal: #82e0aa;
+  --bmi-overweight: #f8c471;
+  --bmi-obese: #ec7063;
+}
 [data-theme-family="onyx-glow"][data-bs-theme="light"] {
   --bg-color: #FBF8F5;
   --text-color: #071516;
@@ -191,9 +232,17 @@
 }
 
 
-/* =====================
-   THEME: Charcoal Canary
-   ===================== */
+/*
+=====================
+  THEME: Charcoal Canary
+===================== 
+*/
+[data-theme-family="charcoal-canary"] {
+  --bmi-underweight: #5dade2;
+  --bmi-normal: #2ecc71;
+  --bmi-overweight: #f4d03f;
+  --bmi-obese: #e74c3c;
+}
 [data-theme-family="charcoal-canary"][data-bs-theme="light"] {
   --bg-color: #F7F6F2;
   --text-color: #0F1724;
@@ -232,9 +281,17 @@
 }
 
 
-/* =====================
-   THEME: Gold Ember
-   ===================== */
+/*
+=====================
+  THEME: Gold Ember
+===================== 
+*/
+[data-theme-family="gold-ember"] {
+  --bmi-underweight: #f4d03f;
+  --bmi-normal: #58d68d;
+  --bmi-overweight: #e67e22;
+  --bmi-obese: #c0392b;
+}
 [data-theme-family="gold-ember"][data-bs-theme="light"] {
   --bg-color: #FFF8F1;
   --text-color: #102A2B;
@@ -275,9 +332,17 @@
 }
 
 
-/* =====================
-   THEME: Sunset Noir
-   ===================== */
+/*
+=====================
+  THEME: Sunset Noir
+===================== 
+*/
+[data-theme-family="sunset-noir"] {
+  --bmi-underweight: #e59866;
+  --bmi-normal: #52be80;
+  --bmi-overweight: #f4d03f;
+  --bmi-obese: #cd6155;
+}
 [data-theme-family="sunset-noir"][data-bs-theme="light"] {
   --bg-color: #FBF7F6;
   --text-color: #0E0B14;
@@ -315,9 +380,11 @@
   --bs-navbar-bg: var(--navbar-color);
 }
 
-/* =====================
-   Global transitions
-   ===================== */
+/*
+=====================
+  Global transitions
+===================== 
+*/
 body,
 .navbar,
 .card,
@@ -330,9 +397,11 @@ body,
   transition: color 0.3s ease;
 }
 
-/* =====================
-   Components Override
-   ===================== */
+/*
+=====================
+  Components Override
+===================== 
+*/
 body {
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
@@ -348,9 +417,11 @@ body {
   color: var(--text-color) !important;
 }
 
-/* =====================
-   Buttons
-   ===================== */
+/*
+=====================
+  Buttons
+===================== 
+*/
 .btn-primary {
   background-color: var(--bs-primary) !important;
   border-color: var(--bs-primary) !important;
@@ -401,9 +472,11 @@ body {
   filter: brightness(85%);
 }
 
-/* =====================
-   Form Elements
-   ===================== */
+/*
+=====================
+  Form Elements
+===================== 
+*/
 
 /* Select dropdown */
 .form-select {
@@ -447,7 +520,31 @@ body {
   color: #fff !important;
 }
 
+
 /* Logo */
 .logo {
   color: var(--logo-color) !important;
+}
+
+
+/* BMI classes */
+.bmi-underweight { 
+  --bs-tooltip-color: var(--bmi-underweight) !important;
+  background-image: linear-gradient(var(--bmi-underweight) -50%, var(--card-color) 100%);
+  border-bottom-color: rgb(41 41 47);
+}
+.bmi-normal { 
+  --bs-tooltip-color: var(--bmi-normal) !important;
+  background-image: linear-gradient(var(--bmi-normal) -50%, var(--card-color) 100%);
+  border-bottom-color: rgb(41 41 47);
+}
+.bmi-overweight { 
+  --bs-tooltip-color: var(--bmi-overweight) !important;
+  background-image: linear-gradient(var(--bmi-overweight) -50%, var(--card-color) 100%);
+  border-bottom-color: rgb(41 41 47);
+}
+.bmi-obese { 
+  --bs-tooltip-color: var(--bmi-obese) !important;
+  background-image: linear-gradient(var(--bmi-obese) -50%, var(--card-color) 100%);
+  border-bottom-color: rgb(41 41 47);
 }

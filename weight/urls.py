@@ -15,6 +15,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
+    path("import-logs/", views.import_logs, name="import_logs"),
 
     # Logs
     path('logs/', views.weightlog_list, name='weightlog_list'),
