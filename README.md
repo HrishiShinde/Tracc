@@ -39,13 +39,13 @@
 ## ⚡ Getting Started (Local Setup)
 
 ### 1. Clone the Repository
-'bash
+```bash
 git clone https://github.com/HrishiShinde/tracc.git
 cd tracc
-'
+```
 
 ### 2. Create & Activate Virtual Environment
-'bash
+```bash
 # macOS/Linux
 python -m venv venv
 source venv/bin/activate
@@ -53,27 +53,27 @@ source venv/bin/activate
 # Windows
 python -m venv venv
 venv\Scripts\activate
-'
+```
 
 ### 3. Install Dependencies
-'bash
+```bash
 pip install -r requirements.txt
-'
+```
 
 ### 4. Run Migrations
-'bash
+```bash
 python manage.py migrate
-'
+```
 
 ### 5. Start the Development Server
-'bash
+```bash
 python manage.py runserver
-'
+```
 
 ### 6. Open in Browser
-'
+```
 http://127.0.0.1:8000/
-'
+```
 
 ---
 
