@@ -4,10 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-
-from .models import Profile, WeightLog
 from django.utils import timezone
 from django.db import connection
+
+from .models import Profile, WeightLog
+import csv
+import io
+from datetime import datetime
 
 # ---------- Register ----------
 def register_view(request):
@@ -106,22 +109,44 @@ def dashboard(request):
     latest_log = profile.weightlog_set.order_by('-date').first()
     recent_logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('-date')
 
+    # BMI and Progress.
     bmi = None
     progress = None
     latest_weight_log = profile.weightlog_set.exclude(weight__isnull=True).order_by('-date').first()
     latest_weight = latest_weight_log.weight if latest_weight_log else 0
-    if profile.height_cm and latest_log:
-        height_m = profile.height_cm / 100
-        bmi = round(latest_weight / (height_m ** 2), 2)
     if profile.target_weight and latest_log:
         start_weight = recent_logs.last().weight if recent_logs else latest_weight
         progress = round(((start_weight - latest_weight) / (start_weight - profile.target_weight)) * 100, 2)
+    if profile.height_cm and latest_log:
+        height_m = profile.height_cm / 100
+        bmi = round(latest_weight / (height_m ** 2), 2)
+
+    # BMI Styles and details.
+    if bmi < 18.5:
+        bmi_class = "Underweight"
+        style = "bmi-underweight"
+    elif bmi < 25:
+        bmi_class = "Normal"
+        style = "bmi-normal"
+    elif bmi < 30:
+        bmi_class = "Overweight"
+        style = "bmi-overweight"
+    else:
+        bmi_class = "Obese"
+        style = "bmi-obese"
+
+    bmi_data = {
+        "value": round(bmi, 1),
+        "class": bmi_class,
+        "style": style
+    }
 
     context = {
         'profile': profile,
         'latest_log': latest_log,
         'recent_logs': recent_logs[:5],
         'bmi': bmi,
+        'bmi_data': bmi_data,
         'progress': progress,
         'today_log': today_log,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
@@ -184,6 +209,60 @@ def delete_weight_log(request, pk):
 @login_required
 def settings(request):
     return render(request, 'dashboard/settings.html')
+
+
+# ---------- Import Logs ----------
+@login_required
+def import_logs(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+
+        # Ensure it's CSV
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, "Please upload a valid CSV file.")
+            return redirect("settings")
+
+        # Decode file
+        data = csv_file.read().decode("utf-8")
+        io_string = io.StringIO(data)
+        reader = csv.DictReader(io_string)
+
+        profile = request.user.profile
+        imported_count = 0
+
+        for row in reader:
+            try:
+                # Parse date
+                date_obj = datetime.strptime(row["Date"], "%d/%m/%y").date()
+
+                weight = float(row["Weight (kg)"]) if row["Weight (kg)"] else None
+                notes = row.get("Notes/Mood", "")
+
+                # Avoid duplicates
+                log, created = WeightLog.objects.get_or_create(
+                    profile=profile,
+                    date=date_obj,
+                    defaults={"weight": weight, "notes": notes}
+                )
+
+                if not created:
+                    # If already exists, update
+                    log.weight = weight
+                    log.notes = notes
+                    log.save()
+
+                imported_count += 1
+
+            except Exception as e:
+                print(f"Row skipped due to error: {e}")
+                continue
+
+        messages.success(request, f"{imported_count} logs imported successfully!")
+        return redirect("settings")
+
+    messages.error(request, "No file uploaded.")
+    return redirect("settings")
+
 
 
 def health_view(request):
