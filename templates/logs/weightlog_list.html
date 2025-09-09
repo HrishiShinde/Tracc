@@ -14,24 +14,40 @@
         <!-- Logs List -->
         <ul class="list-group">
             {% for log in logs %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item d-flex justify-content-between">
                 <div>
                     <strong>{{ log.date }}</strong> - {{ log.weight }} kg
-                    {% if log.notes %}- {{ log.notes }}{% endif %}
+                    <br>
+                    {% if log.notes %}{{ log.notes }}{% endif %}
                 </div>
                 <div>
-                    <button 
-                        class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#addEditModal"
-                        onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
-                    >
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button 
-                    class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
-                    onclick="openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
-                    >
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <div class="dropdown">
+                        <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg width="12" height="14" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark bg-dark">
+                            <li>
+                                <button 
+                                    class="dropdown-item" data-bs-toggle="modal" 
+                                    data-bs-target="#addEditModal" type="button"
+                                    onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
+                                >
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </button>
+                            </li>
+                            <li>
+                                <button 
+                                    class="dropdown-item text-danger" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    onclick="openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
+                                >
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </li>
             {% empty %}

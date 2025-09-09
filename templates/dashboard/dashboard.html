@@ -30,7 +30,7 @@
             <div class="col-6 col-md-3">
                 <div class="card text-center p-3">
                     <h5>Progress</h5>
-                    <p class="fs-4">{{ profile.progress_percentage|default:"-" }}%</p>
+                    <p class="fs-4">{{ progress|default:"-" }}%</p>
                 </div>
             </div>
         </div>
@@ -57,9 +57,9 @@
         <h4 class="mb-3">Recent Weight Logs</h4>
         <ul class="list-group mb-4">
             {% for log in recent_logs %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ log.date }} - {{ log.weight }} kg</span>
-                {% if log.notes %}<span>{{ log.notes }}</span>{% endif %}
+            <li class="list-group-item">
+                <div>{{ log.date }} - {{ log.weight }} kg</div>
+                {% if log.notes %}<div>{{ log.notes }}</div>{% endif %}
             </li>
             {% empty %}
             <li class="list-group-item">No logs yet. Add your first one!</li>
