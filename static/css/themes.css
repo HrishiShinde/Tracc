@@ -15,7 +15,6 @@
   --bmi-normal: #2ecc71;
   --bmi-overweight: #f1c40f;
   --bmi-obese: #e74c3c;
-
 }
 [data-theme-family="serene"][data-bs-theme="light"] {
   --bg-color: #F6FDFF;

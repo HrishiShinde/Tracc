@@ -9,18 +9,21 @@
 
         <!-- Stats Cards -->
         <div class="row mb-5 d-flex">
+            <!-- Current Weight -->
             <div class="col-6 col-md-3 mb-3">
                 <div class="card text-center p-3 card-height">
                     <h5>Current Weight</h5>
                     <p class="fs-2r">{{ profile.current_weight|default:"-" }} <br> kg</p>
                 </div>
             </div>
+            <!-- Target Weight -->
             <div class="col-6 col-md-3 mb-3">
                 <div class="card text-center p-3 card-height">
                     <h5>Target Weight</h5>
                     <p class="fs-2r">{{ profile.target_weight|default:"-" }} <br> kg</p>
                 </div>
             </div>
+            <!-- BMI -->
             <div class="col-6 col-md-3 mb-3">
                 <div 
                     class="card text-center p-3 card-height {{ bmi_data.style }}"
@@ -37,6 +40,7 @@
                     {% endif %}
                 </div>
             </div>
+            <!-- Progress -->
             <div class="col-6 col-md-3 mb-3">
                 <div class="card text-center p-3 card-height">
                     <h5>Progress</h5>
@@ -98,73 +102,148 @@
             {% endfor %}
         </ul>
 
-        <!-- Placeholder for future charts -->
-        <div class="card p-3">
-            <h5>Progress Chart (Coming Soon)</h5>
-            <canvas id="progressChart" style="width:100%; height:200px;"></canvas>
-            <input type="hidden" id="line-data" value="{{ line_data }}">
-        </div>
+    <!-- Progress Chart -->
+    <div class="card p-3">
+        <h5>Progress Chart</h5>
+        <canvas id="progressChart" style="width:100%; height:200px;"></canvas>
+
+        <!-- Safely embed JSON data -->
+        {{ line_data|json_script:"line-data" }}
     </div>
-</div>
 
-<!-- Optional Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    let ctx = document.getElementById('progressChart').getContext('2d');
-    let line_data = document.getElementById('line-data').value;
-    line_data = JSON.parse(line_data)
-    let progressChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: line_data.labels, // TODO: populate with dates
-            datasets: [{
-                label: 'Weight',
-                data: line_data.weights, // TODO: populate with weights
-                borderColor: 'rgba(75, 192, 192, 1)',
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+    <!-- Weight Change -->
+    <div class="card p-3">
+        <h5>Weight Change (Daily)</h5>
+        <canvas id="weightChangeChart" style="width:100%; height:300px;"></canvas>
+        {{ daily_changes|json_script:"daily-changes-data" }}
+    </div>
 
-    document.addEventListener("DOMContentLoaded", () => {
-        // Clock in time localization.
-        const el = document.getElementById("clock-in-time");
-        if (el) {
-            const utcString = el.dataset.utc;
-            if (utcString) {
-                const localDate = new Date(utcString);
-                if (!isNaN(localDate)) {
-                    el.textContent = localDate.toLocaleString([], { 
-                        hour: "2-digit", 
-                        minute: "2-digit" 
-                    });
+    <!-- Load Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Clock in time localization.
+            const el = document.getElementById("clock-in-time");
+            if (el) {
+                const utcString = el.dataset.utc;
+                if (utcString) {
+                    const localDate = new Date(utcString);
+                    if (!isNaN(localDate)) {
+                        el.textContent = localDate.toLocaleString([], { 
+                            hour: "2-digit", 
+                            minute: "2-digit" 
+                        });
+                    }
                 }
             }
-        }
 
-        // Progress Circle Animation.
-        const progressCircle = document.getElementById('progressIndicator');
-        const offsetInput = document.getElementById('progress_offset');
-        
-        if (progressCircle && offsetInput) {
-            const offset = parseFloat(offsetInput.value);
-            // Trigger smooth animation
-            progressCircle.setAttribute('stroke-dashoffset', offset);
-        }
+            // Progress Circle Animation.
+            const progressCircle = document.getElementById('progressIndicator');
+            const offsetInput = document.getElementById('progress_offset');
+            
+            if (progressCircle && offsetInput) {
+                const offset = parseFloat(offsetInput.value);
+                // Trigger smooth animation
+                progressCircle.setAttribute('stroke-dashoffset', offset);
+            }
 
-        // Greeting
-        const h = new Date().getHours();
-        let g = "Hello";
-        let icon = '<i class="bi bi-stars"></i>';
-        if (h < 12) g = "Good Morning";
-        else if (h < 17) g = "Good Afternoon";
-        else g = "Good Evening";
+            // Greeting
+            const h = new Date().getHours();
+            let g = "Hello";
+            let icon = '<i class="bi bi-stars"></i>';
+            if (h < 12) g = "Good Morning";
+            else if (h < 17) g = "Good Afternoon";
+            else g = "Good Evening";
 
-        document.getElementById("greet").innerHTML = `${g}, {{ request.user.first_name|default:request.user.username }}!`;
-    });
+            document.getElementById("greet").innerHTML = `${g}, {{ request.user.first_name|default:request.user.username }}!`;
 
-</script>
+            // Line Graph.
+            const progress_ctx = document.getElementById('progressChart').getContext('2d');
+            const lineData = JSON.parse(document.getElementById('line-data').textContent);
+
+            const weights = lineData.weights || [];
+            const minWeight = Math.min(...weights);
+            const maxWeight = Math.max(...weights);
+
+            new Chart(progress_ctx, {
+                type: 'line',
+                data: {
+                    labels: lineData.labels || [], 
+                    datasets: [{
+                        label: 'Weight',
+                        data: weights,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Weight (kg)'
+                            },
+                            beginAtZero: false,
+                            suggestedMin: minWeight - 5,
+                            suggestedMax: maxWeight + 5
+                        }
+                    }
+                }
+            });
+
+            // Weight Change graph.
+            const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
+            const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
+            const labels = dailyChanges.map(entry => entry.date);
+            const data = dailyChanges.map(entry => entry.change);
+
+            new Chart(weight_change_ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Weight Change (kg)',
+                        data: data,
+                        backgroundColor: data.map(change => change < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                        borderColor: data.map(change => change < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                                title: {
+                                    display: true,
+                                    text: 'Weight (kg)'
+                                },
+                                beginAtZero: false,
+                                suggestedMin: -5,
+                                suggestedMax: 5
+                            }
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}

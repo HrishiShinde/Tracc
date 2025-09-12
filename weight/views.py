@@ -150,12 +150,27 @@ def dashboard(request):
         "style": style
     }
 
+    all_logs = all_logs.order_by('date')
     # Graphs processing.
     line_data = {
         "labels": list(all_logs.values_list('date', flat=True)),
         'weights': list(all_logs.values_list('weight', flat=True))
     }
     line_data['labels'] = [ label.strftime('%d-%m-%Y') for label in line_data['labels']]
+
+    # Build daily changes list
+    daily_changes = []
+    previous_weight = None
+
+    for log in all_logs:
+        date_str = log.date.strftime('%d-%m-%Y')
+        if previous_weight is not None:
+            change = round(log.weight - previous_weight, 1)
+            daily_changes.append({
+                'date': date_str,
+                'change': change
+            })
+        previous_weight = log.weight
 
     context = {
         'profile': profile,
@@ -167,9 +182,11 @@ def dashboard(request):
         'progress_offset': progress_offset,
         'today_log': today_log,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
-        'line_data': line_data
+        'line_data': line_data,
+        'daily_changes': daily_changes
     }
     return render(request, 'dashboard/dashboard.html', context)
+
 
 # ---------- Logs ----------
 @login_required
@@ -281,7 +298,7 @@ def import_logs(request):
     return redirect("settings")
 
 
-
+# ---------- Health ----------
 def health_view(request):
     db_status = False
     try:
@@ -296,7 +313,6 @@ def health_view(request):
         "db_status": db_status,
         "checked_at": timezone.now(),
     }
-    print(context)
     return render(request, "dashboard/health.html", context)
 
 def health_json(request):
