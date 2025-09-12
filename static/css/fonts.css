@@ -11,7 +11,7 @@
 
 /* Base font system */
 :root {
-  --bs-font-sans-serif: 'Josefin Sans', sans-serif;
+  --bs-font-sans-serif: 'Josefin Sans', sans-serif !important;
   --font-heading: "Poiret One", sans-serif;
   --font-accent: 'Caveat', cursive;
 
@@ -21,7 +21,7 @@
 
 /* Body  */
 body {
-  font-family: var(--bs-font-sans-serif);
+  font-family: var(--bs-font-sans-serif) !important;
 }
 
 /* Headings override */

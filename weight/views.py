@@ -101,22 +101,31 @@ def get_more_data(request):
 def dashboard(request):
     profile = request.user.profile
     today = timezone.localdate()
+    CIRCLE_CIRCUMFERENCE = 2 * 3.1416 * 54  # ≈ 339.292
     
     # Today's log for Clock In.
     today_log = profile.weightlog_set.filter(date=today).first()
 
     # Fetch logs.
-    latest_log = profile.weightlog_set.order_by('-date').first()
+    all_logs = profile.weightlog_set.order_by('-date')
+    latest_log = all_logs.first()
     recent_logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('-date')
 
     # BMI and Progress.
     bmi = None
     progress = None
+    progress_offset = CIRCLE_CIRCUMFERENCE  # default if no progress
     latest_weight_log = profile.weightlog_set.exclude(weight__isnull=True).order_by('-date').first()
     latest_weight = latest_weight_log.weight if latest_weight_log else 0
-    if profile.target_weight and latest_log:
+    
+    if profile.target_weight and latest_weight_log:
         start_weight = recent_logs.last().weight if recent_logs else latest_weight
-        progress = round(((start_weight - latest_weight) / (start_weight - profile.target_weight)) * 100, 2)
+        weight_diff = start_weight - profile.target_weight
+        if weight_diff != 0:
+            progress = round(((start_weight - latest_weight) / weight_diff) * 100)
+            progress = max(0, min(progress, 100))  # Clamp between 0–100
+            progress_offset = CIRCLE_CIRCUMFERENCE - (progress / 100) * CIRCLE_CIRCUMFERENCE
+
     if profile.height_cm and latest_log:
         height_m = profile.height_cm / 100
         bmi = round(latest_weight / (height_m ** 2), 2)
@@ -141,6 +150,28 @@ def dashboard(request):
         "style": style
     }
 
+    all_logs = all_logs.order_by('date')
+    # Graphs processing.
+    line_data = {
+        "labels": list(all_logs.values_list('date', flat=True)),
+        'weights': list(all_logs.values_list('weight', flat=True))
+    }
+    line_data['labels'] = [ label.strftime('%d-%m-%Y') for label in line_data['labels']]
+
+    # Build daily changes list
+    daily_changes = []
+    previous_weight = None
+
+    for log in all_logs:
+        date_str = log.date.strftime('%d-%m-%Y')
+        if previous_weight is not None:
+            change = round(log.weight - previous_weight, 1)
+            daily_changes.append({
+                'date': date_str,
+                'change': change
+            })
+        previous_weight = log.weight
+
     context = {
         'profile': profile,
         'latest_log': latest_log,
@@ -148,8 +179,11 @@ def dashboard(request):
         'bmi': bmi,
         'bmi_data': bmi_data,
         'progress': progress,
+        'progress_offset': progress_offset,
         'today_log': today_log,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
+        'line_data': line_data,
+        'daily_changes': daily_changes
     }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -264,7 +298,7 @@ def import_logs(request):
     return redirect("settings")
 
 
-
+# ---------- Health ----------
 def health_view(request):
     db_status = False
     try:
@@ -279,7 +313,6 @@ def health_view(request):
         "db_status": db_status,
         "checked_at": timezone.now(),
     }
-    print(context)
     return render(request, "dashboard/health.html", context)
 
 def health_json(request):

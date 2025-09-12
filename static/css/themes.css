@@ -1,3 +1,10 @@
+[data-bs-theme="light"] {
+  --border-bottom-color: rgb(217 217 216);
+}
+[data-bs-theme="dark"] {
+  --border-bottom-color: rgb(41 41 47);
+}
+
 /*
 =====================
   THEME: Serene Teal
@@ -8,7 +15,6 @@
   --bmi-normal: #2ecc71;
   --bmi-overweight: #f1c40f;
   --bmi-obese: #e74c3c;
-
 }
 [data-theme-family="serene"][data-bs-theme="light"] {
   --bg-color: #F6FDFF;
@@ -531,20 +537,20 @@ body {
 .bmi-underweight { 
   --bs-tooltip-color: var(--bmi-underweight) !important;
   background-image: linear-gradient(var(--bmi-underweight) -50%, var(--card-color) 100%);
-  border-bottom-color: rgb(41 41 47);
+  border-bottom-color: var(--border-bottom-color) !important;
 }
 .bmi-normal { 
   --bs-tooltip-color: var(--bmi-normal) !important;
   background-image: linear-gradient(var(--bmi-normal) -50%, var(--card-color) 100%);
-  border-bottom-color: rgb(41 41 47);
+  border-bottom-color: var(--border-bottom-color) !important;
 }
 .bmi-overweight { 
   --bs-tooltip-color: var(--bmi-overweight) !important;
   background-image: linear-gradient(var(--bmi-overweight) -50%, var(--card-color) 100%);
-  border-bottom-color: rgb(41 41 47);
+  border-bottom-color: var(--border-bottom-color) !important;
 }
 .bmi-obese { 
   --bs-tooltip-color: var(--bmi-obese) !important;
   background-image: linear-gradient(var(--bmi-obese) -50%, var(--card-color) 100%);
-  border-bottom-color: rgb(41 41 47);
+  border-bottom-color: var(--border-bottom-color) !important;
 }

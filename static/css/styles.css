@@ -2,3 +2,27 @@
     font-weight: 100; 
     font-size: 1.5rem;
 }
+
+#progressIndicator {
+    transition: stroke-dashoffset 1.5s ease;
+}
+
+.card-height {
+    height: 220px !important;
+}
+
+p {
+    margin-top: 25px !important;
+}
+
+.fs-2r {
+    font-size: 2rem !important;
+}
+
+.m--2 {
+    margin-bottom: 5px !important;
+}
+
+.modal-dialog {
+    top: 30%;
+}
