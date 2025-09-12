@@ -26,3 +26,7 @@ p {
 .modal-dialog {
     top: 30%;
 }
+
+.bg-blur {
+    backdrop-filter: blur(1px);
+}

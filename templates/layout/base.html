@@ -88,7 +88,7 @@
     {% endif  %}
         
     <!-- Add/Edit Modal -->
-    <div class="modal fade" id="addEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade bg-blur" id="addEditModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <form method="POST" id="addEditForm" action="{% url 'add_weight_log' %}">
                 {% csrf_token %}
