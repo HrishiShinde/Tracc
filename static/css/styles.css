@@ -14,15 +14,30 @@
 p {
     margin-top: 25px !important;
 }
-
-.fs-2r {
-    font-size: 2rem !important;
+.card-body-margin {
+    margin: 15px 0px 0px 10px;
 }
 
-.m--2 {
-    margin-bottom: 5px !important;
+.unit-margin {
+    margin: 20px 0px 0px 5px;
+}
+
+.fs-1r {
+    font-size: 1rem !important;
+}
+
+.fs-3r {
+    font-size: 3rem !important;
+}
+
+.mb--2 {
+    margin-bottom: -2px !important;
 }
 
 .modal-dialog {
     top: 30%;
+}
+
+.bg-blur {
+    backdrop-filter: blur(1px);
 }
