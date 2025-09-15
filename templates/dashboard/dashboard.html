@@ -13,14 +13,20 @@
             <div class="col-6 col-md-3 mb-3">
                 <div class="card text-center p-3 card-height">
                     <h5>Current Weight</h5>
-                    <p class="fs-2r">{{ profile.current_weight|default:"-" }} <br> kg</p>
+                    <div class="d-flex justify-content-center align-items-center card-body-margin">
+                        <p class="fs-3r">{{ profile.current_weight|default:"-" }}</p>
+                        <span class="fs-1r unit-margin">kg</span>
+                    </div>
                 </div>
             </div>
             <!-- Target Weight -->
             <div class="col-6 col-md-3 mb-3">
                 <div class="card text-center p-3 card-height">
                     <h5>Target Weight</h5>
-                    <p class="fs-2r">{{ profile.target_weight|default:"-" }} <br> kg</p>
+                    <div class="d-flex justify-content-center align-items-center card-body-margin">
+                        <p class="fs-3r">{{ profile.target_weight|default:"-" }}</p>
+                        <span class="fs-1r unit-margin">kg</span>
+                    </div>
                 </div>
             </div>
             <!-- BMI -->
@@ -33,7 +39,7 @@
                 >
                     <h5>BMI</h5>
                     {% if bmi_data.value %}
-                        <p class="fs-2r m--2">{{ bmi_data.value }}</p>
+                        <p class="fs-3r mb--2">{{ bmi_data.value }}</p>
                         <small class="fs-4">{{ bmi_data.class }}</small>
                     {% else %}
                         <p class="fs-2r text-muted">-</p>
@@ -102,21 +108,25 @@
             {% endfor %}
         </ul>
 
-    <!-- Progress Chart -->
-    <div class="card p-3">
-        <h5>Progress Chart</h5>
-        <canvas id="progressChart" style="width:100%; height:200px;"></canvas>
-
-        <!-- Safely embed JSON data -->
-        {{ line_data|json_script:"line-data" }}
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 h-100">
+                <h5 class="card-title">Progress Chart</h5>
+                <canvas id="progressChart" style="width:100%; height:200px;"></canvas>
+                {{ line_data|json_script:"line-data" }}
+            </div>
+        </div>
+    
+        <div class="col-md-6 mb-4">
+            <div class="card p-3 h-100">
+                <h5 class="card-title">Daily Weight Change</h5>
+                <canvas id="weightChangeChart" style="width:100%; height:200px;"></canvas>
+                {{ daily_changes|json_script:"daily-changes-data" }}
+            </div>
+        </div>
     </div>
-
-    <!-- Weight Change -->
-    <div class="card p-3">
-        <h5>Weight Change (Daily)</h5>
-        <canvas id="weightChangeChart" style="width:100%; height:300px;"></canvas>
-        {{ daily_changes|json_script:"daily-changes-data" }}
-    </div>
+    
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
