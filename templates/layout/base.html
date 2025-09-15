@@ -35,11 +35,7 @@
                 <span class="logo">TRACC</span>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse d-none d-lg-block" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if request.user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
@@ -78,14 +74,31 @@
     <!-- Floating Add Button -->
     {% if show_qab %}
     <button 
-        class="btn btn-primary rounded-circle shadow-lg"
-        style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px;"
-        data-bs-toggle="modal" data-bs-target="#addEditModal"
+        class="btn shadow-lg add-btn"
+        data-bs-toggle="modal" 
+        data-bs-target="#addEditModal"
         onclick="openAddModal()"
-    >    
+    >
         <i class="bi bi-plus-lg"></i>
     </button>
     {% endif  %}
+
+    <!-- Bottom Navbar for small screens -->
+    <nav class="bottom-navbar d-lg-none bg-theme">
+        <a href="{% url 'weightlog_list' %}" class="nav-item text-center">
+            <i class="bi bi-journal-text fs-4"></i><br>
+            <span>Logs</span>
+        </a>
+        <a href="{% url 'dashboard' %}" class="nav-item text-center">
+            <i class="bi bi-house-door fs-4"></i><br>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item text-center">
+            <i class="bi bi-gear fs-4"></i><br>
+            <span>Settings</span>
+        </a>
+    </nav>
+
         
     <!-- Add/Edit Modal -->
     <div class="modal fade bg-blur" id="addEditModal" tabindex="-1" aria-hidden="true">
@@ -119,12 +132,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("{% static 'js/service-worker.js' %}");
-        }
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
         function openAddModal() {
             document.getElementById('modalTitle').innerText = "Add Weight Log";
             document.getElementById('addEditForm').action = "{% url 'add_weight_log' %}";
@@ -132,77 +139,28 @@
             document.getElementById('modalNotes').value = "";
         }
 
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("{% static 'js/service-worker.js' %}");
+        }
+
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
         const root = document.documentElement;
-        const toggleBtn = document.getElementById("theme-toggle"); // navbar one
-        const themeSelect = document.getElementById("themeSelect");
-        const radioLight = document.getElementById("btnradio1");
-        const radioDark = document.getElementById("btnradio2");
 
         // Load saved theme family + mode
         let savedFamily = localStorage.getItem("themeFamily") || "classic";
         let savedMode = localStorage.getItem("themeMode") || "light";
 
-        setTheme(savedFamily, savedMode);
-        themeSelect.value = savedFamily;
+        root.setAttribute("data-theme-family", savedFamily);
+        root.setAttribute("data-bs-theme", savedMode);
 
-        // Handle theme select change
-        themeSelect.addEventListener("change", (e) => {
-            savedFamily = e.target.value;
-            localStorage.setItem("themeFamily", savedFamily);
-            setTheme(savedFamily, savedMode);
-        });
-
-        // Handle navbar toggle (icon button)
-        if (toggleBtn) {
-            toggleBtn.addEventListener("click", () => {
-                savedMode = savedMode === "light" ? "dark" : "light";
-                localStorage.setItem("themeMode", savedMode);
-                setTheme(savedFamily, savedMode);
-                updateRadio(savedMode);
-            });
-        }
-
-        // Handle settings page radios
-        radioLight.addEventListener("change", () => {
-            if (radioLight.checked) {
-                savedMode = "light";
-                localStorage.setItem("themeMode", savedMode);
-                setTheme(savedFamily, savedMode);
+        const navLinks = document.querySelectorAll('.bottom-navbar a');
+        navLinks.forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.add('active');
             }
         });
-
-        radioDark.addEventListener("change", () => {
-            if (radioDark.checked) {
-                savedMode = "dark";
-                localStorage.setItem("themeMode", savedMode);
-                setTheme(savedFamily, savedMode);
-            }
-        });
-
-        function setTheme(family, mode) {
-            root.setAttribute("data-theme-family", family);
-            root.setAttribute("data-bs-theme", mode);
-
-            // update navbar toggle icon
-            if (toggleBtn) {
-                toggleBtn.innerHTML = mode === "light" 
-                    ? '<i class="bi bi-moon"></i>' 
-                    : '<i class="bi bi-sun"></i>';
-            }
-
-            // update settings page radios
-            updateRadio(mode);
-        }
-
-        function updateRadio(mode) {
-            if (mode === "light") {
-                radioLight.checked = true;
-                radioDark.checked = false;
-            } else {
-                radioLight.checked = false;
-                radioDark.checked = true;
-            }
-        }
     </script>
 </body>
 </html>

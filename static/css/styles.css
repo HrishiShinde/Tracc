@@ -41,3 +41,82 @@ p {
 .bg-blur {
     backdrop-filter: blur(1px);
 }
+
+/* Quick Add Button */
+.add-btn {
+    position: fixed !important;
+    bottom: 90px !important;
+    right: 20px !important;
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 28px !important;
+    border-radius: 50% !important;
+    color: #fff !important;
+    background-color: var(--bs-primary) !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.2s ease, filter 0.2s ease, background-color 0.3s ease !important;
+}
+
+.add-btn:hover {
+    filter: brightness(90%) !important;
+    transform: scale(1.05) !important;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .add-btn {
+    background-color: var(--bs-primary) !important;
+}
+
+/* Bottom Navbar */
+.bottom-navbar {
+    position: fixed;
+    bottom: 20px;
+    left: 10px;
+    right: 15px;
+    height: 70px;
+    background-color: var(--bs-navbar-bg) !important;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    z-index: 999;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    padding: 0 10px;
+}
+
+.bottom-navbar a {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--text-color);
+    font-size: 14px;
+    text-decoration: none;
+}
+
+/* Icons inside links */
+.bottom-navbar a i {
+    font-size: 22px;
+}
+
+/* Active link */
+.bottom-navbar a.active {
+    color: var(--bs-primary) !important;
+}
+
+@media (min-width: 992px) {
+    .bottom-navbar {
+        display: none;
+    }
+}
+
+/* Make sure this applies only on small screens */
+@media (max-width: 992px) {
+    body {
+        padding-bottom: 50px !important; /* navbar height + some extra spacing */
+    }
+}
