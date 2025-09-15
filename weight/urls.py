@@ -27,6 +27,9 @@ urlpatterns = [
     # Settings
     path('settings/', views.settings, name='settings'),
 
+    # Analytics
+    path('analytics/', views.analytics, name='analytics'),
+
     # Catch-all empty path redirect
     path('', lambda request: redirect('dashboard'), name='home_redirect'),
 

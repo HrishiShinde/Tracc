@@ -297,6 +297,12 @@ def import_logs(request):
     return redirect("settings")
 
 
+# ---------- Analytics ----------
+@login_required
+def analytics(request):
+    return redirect("dashboard")
+
+
 # ---------- Health ----------
 def health_view(request):
     db_status = False

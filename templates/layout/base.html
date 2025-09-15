@@ -72,7 +72,7 @@
     </div>
 
     <!-- Floating Add Button -->
-    {% if show_qab %}
+    <!-- {% if show_qab %}
     <button 
         class="btn shadow-lg add-btn"
         data-bs-toggle="modal" 
@@ -81,23 +81,39 @@
     >
         <i class="bi bi-plus-lg"></i>
     </button>
-    {% endif  %}
+    {% endif  %} -->
 
-    <!-- Bottom Navbar for small screens -->
-    <nav class="bottom-navbar d-lg-none bg-theme">
-        <a href="{% url 'weightlog_list' %}" class="nav-item text-center">
-            <i class="bi bi-journal-text fs-4"></i><br>
-            <span>Logs</span>
-        </a>
+    <!-- Bottom Navbar -->
+    <nav class="bottom-navbar">
         <a href="{% url 'dashboard' %}" class="nav-item text-center">
-            <i class="bi bi-house-door fs-4"></i><br>
+            <i class="bi bi-house-door"></i><br>
             <span>Home</span>
         </a>
+        <a href="{% url 'weightlog_list' %}" class="nav-item text-center">
+            <i class="bi bi-journal-text"></i><br>
+            <span>Logs</span>
+        </a>
+
+        <!-- Center Add Button -->
+        <button 
+            class="nav-add-btn"
+            data-bs-toggle="modal" 
+            data-bs-target="#addEditModal"
+            onclick="openAddModal()"
+        >
+            <i class="bi bi-plus-lg"></i>
+        </button>
+
+        <a href="{% url 'analytics' %}" class="nav-item text-center">
+            <i class="bi bi-graph-up"></i><br>
+            <span>Analytics</span>
+        </a>
         <a href="{% url 'settings' %}" class="nav-item text-center">
-            <i class="bi bi-gear fs-4"></i><br>
+            <i class="bi bi-gear"></i><br>
             <span>Settings</span>
         </a>
     </nav>
+
 
         
     <!-- Add/Edit Modal -->

@@ -42,81 +42,76 @@ p {
     backdrop-filter: blur(1px);
 }
 
-/* Quick Add Button */
-.add-btn {
-    position: fixed !important;
-    bottom: 90px !important;
-    right: 20px !important;
-    width: 60px !important;
-    height: 60px !important;
-    font-size: 28px !important;
-    border-radius: 50% !important;
-    color: #fff !important;
-    background-color: var(--bs-primary) !important;
-    border: none !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: transform 0.2s ease, filter 0.2s ease, background-color 0.3s ease !important;
-}
-
-.add-btn:hover {
-    filter: brightness(90%) !important;
-    transform: scale(1.05) !important;
-}
-
-/* Dark mode */
-[data-bs-theme="dark"] .add-btn {
-    background-color: var(--bs-primary) !important;
-}
-
 /* Bottom Navbar */
 .bottom-navbar {
     position: fixed;
     bottom: 20px;
     left: 10px;
-    right: 15px;
+    right: 10px;
     height: 70px;
     background-color: var(--bs-navbar-bg) !important;
     border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     z-index: 999;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     align-items: center;
     padding: 0 10px;
+    width: auto !important;
+    box-shadow: 0px 0px 20px 0px var(--border-bottom-color);
 }
 
+/* Normal items */
 .bottom-navbar a {
-    display: inline-flex;
-    flex-direction: row;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
     color: var(--text-color);
-    font-size: 14px;
+    /* font-size: 12px; */
     text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    border-radius: 12px;
+    padding: 6px 4px;
 }
 
-/* Icons inside links */
-.bottom-navbar a i {
-    font-size: 22px;
+/* Icons size */
+.nav-item i {
+  font-size: 25px;
 }
 
-/* Active link */
+/* Nav-item text size */
+.nav-item span {
+  font-size: 12px;
+margin-top: -25px;
+}
+
+/* Active pill effect */
 .bottom-navbar a.active {
     color: var(--bs-primary) !important;
+    /* background-color: rgba(var(--bs-primary-rgb), 0.12); */
 }
 
-@media (min-width: 992px) {
-    .bottom-navbar {
-        display: none;
-    }
+/* Add button (center) */
+.nav-add-btn {
+    position: relative;
+    top: -25px; /* pops out */
+    margin: 0 auto 0 auto;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--bs-primary);
+    color: #fff;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    transition: transform 0.2s ease, filter 0.2s ease;
 }
 
-/* Make sure this applies only on small screens */
-@media (max-width: 992px) {
-    body {
-        padding-bottom: 50px !important; /* navbar height + some extra spacing */
-    }
+.nav-add-btn:hover {
+    filter: brightness(90%);
+    transform: scale(1.08);
 }
+
