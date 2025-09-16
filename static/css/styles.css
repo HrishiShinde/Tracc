@@ -42,14 +42,15 @@ p {
     backdrop-filter: blur(1px);
 }
 
+
 /* Bottom Navbar */
 .bottom-navbar {
     position: fixed;
-    bottom: 20px;
+    bottom: 12px;
     left: 10px;
     right: 10px;
     height: 70px;
-    background-color: var(--bs-navbar-bg) !important;
+    background-color: var(--bs-navbar-bg, rgba(255,255,255,0.85)) !important;
     border-radius: 18px;
     z-index: 999;
     display: grid;
@@ -57,40 +58,54 @@ p {
     align-items: center;
     padding: 0 10px;
     width: auto !important;
-    box-shadow: 0px 0px 20px 0px var(--border-bottom-color);
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+    backdrop-filter: blur(12px);
 }
 
 /* Normal items */
 .bottom-navbar a {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: var(--text-color);
-    /* font-size: 12px; */
     text-decoration: none;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
-    border-radius: 12px;
+    transition: all 0.3s ease;
     padding: 6px 4px;
 }
 
 /* Icons size */
 .nav-item i {
-  font-size: 25px;
+    font-size: 25px;
+    line-height: 1;
 }
 
 /* Nav-item text size */
 .nav-item span {
-  font-size: 12px;
-margin-top: -25px;
+    font-size: 12px;
+    margin-top: 4px;
 }
 
-/* Active pill effect */
+/* Active state */
 .bottom-navbar a.active {
     color: var(--bs-primary) !important;
-    /* background-color: rgba(var(--bs-primary-rgb), 0.12); */
+    position: relative;
 }
 
+/* Active state top line + downward glow */
+.bottom-navbar a.active::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--bs-primary);
+    box-shadow: 
+        0 15px 30px 2px var(--bs-primary),   /* strong downward glow */
+        0 6px 18px 4px rgba(0,0,0,0.15);   /* subtle depth for realism */
+}
 /* Add button (center) */
 .nav-add-btn {
     position: relative;

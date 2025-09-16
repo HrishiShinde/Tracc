@@ -84,13 +84,13 @@
     {% endif  %} -->
 
     <!-- Bottom Navbar -->
-    <nav class="bottom-navbar">
+    <nav class="bottom-navbar d-lg-none">
         <a href="{% url 'dashboard' %}" class="nav-item text-center">
-            <i class="bi bi-house-door"></i><br>
+            <i class="bi bi-house-door"></i>
             <span>Home</span>
         </a>
         <a href="{% url 'weightlog_list' %}" class="nav-item text-center">
-            <i class="bi bi-journal-text"></i><br>
+            <i class="bi bi-journal-text"></i>
             <span>Logs</span>
         </a>
 
@@ -105,15 +105,14 @@
         </button>
 
         <a href="{% url 'analytics' %}" class="nav-item text-center">
-            <i class="bi bi-graph-up"></i><br>
+            <i class="bi bi-graph-up"></i>
             <span>Analytics</span>
         </a>
         <a href="{% url 'settings' %}" class="nav-item text-center">
-            <i class="bi bi-gear"></i><br>
+            <i class="bi bi-gear"></i>
             <span>Settings</span>
         </a>
     </nav>
-
 
         
     <!-- Add/Edit Modal -->
