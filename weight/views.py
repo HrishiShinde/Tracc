@@ -7,7 +7,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.db import connection
 
-from .models import Profile, WeightLog
+from .models import Profile, WeightLog, UserMilestone
+from .utils import Insights, calculate_bmi
 import csv
 import io
 from datetime import datetime
@@ -101,7 +102,6 @@ def get_more_data(request):
 def dashboard(request):
     profile = request.user.profile
     today = timezone.localdate()
-    CIRCLE_CIRCUMFERENCE = 2 * 3.1416 * 54  # ≈ 339.292
     
     # Today's log for Clock In.
     today_log = profile.weightlog_set.filter(date=today).first()
@@ -109,70 +109,20 @@ def dashboard(request):
     # Fetch logs.
     logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('date')
 
-    # BMI and Progress.
-    bmi = None
-    progress = None
-    progress_offset = CIRCLE_CIRCUMFERENCE  # default if no progress
+    # Recent and Latest.
     recent_logs = logs.order_by('-date')[:5]
-    latest_weight_log = logs.order_by('-date').first()
-    latest_weight = latest_weight_log.weight if latest_weight_log else 0
-    
-    if profile.target_weight and latest_weight_log:
-        start_weight = logs.first().weight if logs else latest_weight
-        weight_diff = start_weight - profile.target_weight
-        if weight_diff != 0:
-            progress = round(((start_weight - latest_weight) / weight_diff) * 100)
-            progress = max(0, min(progress, 100))  # Clamp between 0–100
-            progress_offset = CIRCLE_CIRCUMFERENCE - (progress / 100) * CIRCLE_CIRCUMFERENCE
+    latest_weight = logs.last().weight
 
-    if profile.height_cm and latest_weight:
-        height_m = profile.height_cm / 100
-        bmi = round(latest_weight / (height_m ** 2), 2)
+    # Call Insights class.
+    insights = Insights(logs)
 
-    # BMI Styles and details.
-    if bmi < 18.5:
-        bmi_class = "Underweight"
-        style = "bmi-underweight"
-    elif bmi < 25:
-        bmi_class = "Normal"
-        style = "bmi-normal"
-    elif bmi < 30:
-        bmi_class = "Overweight"
-        style = "bmi-overweight"
-    else:
-        bmi_class = "Obese"
-        style = "bmi-obese"
-
-    bmi_data = {
-        "value": round(bmi, 1),
-        "class": bmi_class,
-        "style": style
-    }
+    # BMI and Progress.
+    progress, progress_offset = insights.get_progress(profile)
+    bmi_data = calculate_bmi(latest_weight, profile.height_cm)
 
     # Graphs processing.
-    line_data = {
-        "labels": list(logs.values_list('date', flat=True)),
-        'weights': list(logs.values_list('weight', flat=True))
-    }
-    line_data['labels'] = [ label.strftime('%d-%m-%Y') for label in line_data['labels']]
-
-    # Build daily changes list
-    daily_changes = []
-    previous_weight = None
-
-    for log in logs:
-        # If weight is none that means latest record is of "clock in".
-        if log.weight is None:
-            break
-
-        date_str = log.date.strftime('%d-%m-%Y')
-        if previous_weight is not None:
-            change = round(log.weight - previous_weight, 1)
-            daily_changes.append({
-                'date': date_str,
-                'change': change
-            })
-        previous_weight = log.weight
+    line_data = insights.get_line_data()
+    daily_changes = insights.get_daily_change()
 
     context = {
         'profile': profile,
@@ -184,7 +134,7 @@ def dashboard(request):
         'line_data': line_data,
         'daily_changes': daily_changes
     }
-    return render(request, 'dashboard/dashboard.html', context)
+    return render(request, 'pages/dashboard.html', context)
 
 
 # ---------- Logs ----------
@@ -241,7 +191,7 @@ def delete_weight_log(request, pk):
 # ---------- Settings ----------
 @login_required
 def settings(request):
-    return render(request, 'dashboard/settings.html')
+    return render(request, 'pages/settings.html')
 
 
 # ---------- Import Logs ----------
@@ -300,7 +250,34 @@ def import_logs(request):
 # ---------- Analytics ----------
 @login_required
 def analytics(request):
-    return redirect("dashboard")
+    profile = request.user.profile
+    logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('date')
+
+    insights = Insights(logs)
+
+    # Graphs processing
+    line_data = insights.get_line_data()
+    daily_changes = insights.get_daily_change()
+    monthly_avg = insights.get_monthly_avg()
+    weight_zones = insights.get_weight_zones()
+
+    # Cards.
+    streaks = profile.streaks
+    fastest_drop = insights.get_fastest_drop()
+    milestones = UserMilestone.objects.filter(profile=profile).last().milestone
+
+    context = {
+        "profile": profile,
+        "line_data": line_data,
+        "daily_changes": daily_changes,
+        "monthly_avg": monthly_avg,
+        "weight_zones": weight_zones,
+        "streaks": streaks,
+        "milestones": milestones,
+        "fastest_drop": fastest_drop,
+    }
+    return render(request, "pages/analytics.html", context)
+
 
 
 # ---------- Health ----------
@@ -318,7 +295,7 @@ def health_view(request):
         "db_status": db_status,
         "checked_at": timezone.now(),
     }
-    return render(request, "dashboard/health.html", context)
+    return render(request, "pages/health.html", context)
 
 def health_json(request):
     db_status = False

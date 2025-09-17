@@ -1,0 +1,107 @@
+{% extends 'layout/base.html' %}
+{% block title %}Analytics | Tracc{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+
+        <!-- Page Title -->
+        <h2 class="mb-5 text-center">Analytics</h2>
+
+        <!-- Main Line Graph -->
+        <div class="card p-3 mb-4">
+            <h5 class="card-title">Progress Over Time</h5>
+            <canvas id="progressChart"></canvas>
+            {{ line_data|json_script:"line-data" }}
+        </div>
+    </div>
+
+    <!-- Side Scroll Mini Cards -->
+    <div class="d-flex flex-row flex-nowrap overflow-auto mb-3">
+        <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
+            <h6>🔥 Streaks</h6>
+            <p class="small">{{streaks}}</p>
+            <p class="small">Tap to view</p>
+        </div>
+        <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
+            <h6>🏆 Milestones</h6>
+            <p class="small">{{milestones.title}}</p>
+        </div>
+        <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
+            <h6>⚡ Fastest Drop</h6>
+            <p class="small">{{fastest_drop.drop}}kg/week</p>
+        </div>
+        <!-- add more mini cards here -->
+    </div>
+
+    <!-- Daily Weight Change Bar Graph -->
+    <div class="card p-3 mb-4">
+        <h5 class="card-title">Daily Change</h5>
+        <canvas id="weightChangeChart"></canvas>
+        {{ daily_changes|json_script:"daily-changes-data" }}
+    </div>
+
+    <!-- Weight Zones -->
+    <div class="card p-3 mb-4">
+        <h5 class="card-title">Weight Zones</h5>
+        <div class="card-body">
+            <canvas id="zonesGraph"></canvas>
+        </div>
+    </div>
+
+    <!-- Monthly Average -->
+    <div class="card p-3 mb-4">
+        <h5 class="card-title">Monthly Average</h5>
+        <div class="card-body">
+            <canvas id="monthlyGraph"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Line Graph (Progress)
+    const progress_ctx = document.getElementById('progressChart').getContext('2d');
+    const lineData = JSON.parse(document.getElementById('line-data').textContent);
+
+    new Chart(progress_ctx, {
+        type: 'line',
+        data: {
+            labels: lineData.labels,
+            datasets: [{
+                label: 'Weight',
+                data: lineData.weights,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+
+    // Bar Graph (Daily Changes)
+    const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
+    const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
+
+    new Chart(weight_change_ctx, {
+        type: 'bar',
+        data: {
+            labels: dailyChanges.map(entry => entry.date),
+            datasets: [{
+                label: 'Daily Change (kg)',
+                data: dailyChanges.map(entry => entry.change),
+                backgroundColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                borderColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                borderWidth: 1
+            }]
+        },
+        options: { responsive: true }
+    });
+});
+</script>
+{% endblock %}
