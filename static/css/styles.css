@@ -39,7 +39,7 @@ p {
 }
 
 .bg-blur {
-    backdrop-filter: blur(1px);
+    backdrop-filter: blur(5px);
 }
 
 
@@ -130,3 +130,8 @@ p {
     transform: scale(1.08);
 }
 
+@media (max-width: 992px) {
+    body {
+        padding-bottom: 50px !important; /* navbar height + some extra spacing */
+    }
+}

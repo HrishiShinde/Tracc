@@ -115,7 +115,17 @@ class Insights:
                 zones["Overweight"] += 1
             else:
                 zones["Obese"] += 1
-        return zones
+
+        weight_zones = [
+            {
+                "label": zone,
+                "count": count,
+                "color": f"var(--bmi-{zone.lower()})"
+            }
+            for zone, count in zones.items() 
+        ]
+
+        return weight_zones
 
     def get_fastest_drop(self):
         fastest = None

@@ -166,6 +166,7 @@ def add_or_edit_weight_log(request, pk=None):
         # Update fields
         if weight:
             log.weight = weight
+            log.bmi = calculate_bmi(weight, profile.height_cm).get("value")
         log.notes = notes
 
         if check_in:

@@ -4,7 +4,6 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-sm-12 col-md-10 col-lg-8">
-
         <!-- Page Title -->
         <h2 class="mb-5 text-center">Analytics</h2>
 
@@ -19,41 +18,46 @@
     <!-- Side Scroll Mini Cards -->
     <div class="d-flex flex-row flex-nowrap overflow-auto mb-3">
         <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
-            <h6>🔥 Streaks</h6>
-            <p class="small">{{streaks}}</p>
-            <p class="small">Tap to view</p>
+            <h6>Streaks</h6>
+            <p class="fs-3r me-3">🔥{{streaks}}</p>
         </div>
         <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
-            <h6>🏆 Milestones</h6>
-            <p class="small">{{milestones.title}}</p>
+            <h6>Milestones</h6>
+            <p class="fs-3r">🏆</p>
+            <p class="small" style="margin-top: 0px !important;">{{milestones.title}}</p>
         </div>
         <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
-            <h6>⚡ Fastest Drop</h6>
-            <p class="small">{{fastest_drop.drop}}kg/week</p>
+            <h6>Fastest Drop</h6>
+            <p class="fs-3r">{{fastest_drop.drop}}</p>
+            <p style="margin-top: 0px !important;">kg/week</p>
         </div>
         <!-- add more mini cards here -->
     </div>
 
     <!-- Daily Weight Change Bar Graph -->
-    <div class="card p-3 mb-4">
-        <h5 class="card-title">Daily Change</h5>
-        <canvas id="weightChangeChart"></canvas>
-        {{ daily_changes|json_script:"daily-changes-data" }}
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="card p-3 mb-4">
+            <h5 class="card-title">Daily Change</h5>
+            <canvas id="weightChangeChart"></canvas>
+            {{ daily_changes|json_script:"daily-changes-data" }}
+        </div>
     </div>
 
     <!-- Weight Zones -->
-    <div class="card p-3 mb-4">
-        <h5 class="card-title">Weight Zones</h5>
-        <div class="card-body">
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="card p-3 mb-4">
+            <h5 class="card-title">Weight Zones</h5>
             <canvas id="zonesGraph"></canvas>
+            {{ weight_zones|json_script:"weight-zones-data" }}
         </div>
     </div>
 
     <!-- Monthly Average -->
-    <div class="card p-3 mb-4">
-        <h5 class="card-title">Monthly Average</h5>
-        <div class="card-body">
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="card p-3 mb-4">
+            <h5 class="card-title">Monthly Average</h5>
             <canvas id="monthlyGraph"></canvas>
+            {{ monthly_avg|json_script:"monthly-avg-data" }}
         </div>
     </div>
 </div>
@@ -62,46 +66,95 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    // Line Graph (Progress)
-    const progress_ctx = document.getElementById('progressChart').getContext('2d');
-    const lineData = JSON.parse(document.getElementById('line-data').textContent);
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
 
-    new Chart(progress_ctx, {
-        type: 'line',
-        data: {
-            labels: lineData.labels,
-            datasets: [{
-                label: 'Weight',
-                data: lineData.weights,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true
-        }
+    document.addEventListener("DOMContentLoaded", () => {
+        // Line Graph (Progress)
+        const progress_ctx = document.getElementById('progressChart').getContext('2d');
+        const lineData = JSON.parse(document.getElementById('line-data').textContent);
+
+        new Chart(progress_ctx, {
+            type: 'line',
+            data: {
+                labels: lineData.labels,
+                datasets: [{
+                    label: 'Weight',
+                    data: lineData.weights,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+
+        // Bar Graph (Daily Changes)
+        const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
+        const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
+
+        new Chart(weight_change_ctx, {
+            type: 'bar',
+            data: {
+                labels: dailyChanges.map(entry => entry.date),
+                datasets: [{
+                    label: 'Daily Change (kg)',
+                    data: dailyChanges.map(entry => entry.change),
+                    backgroundColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                    borderColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        
+        // Weight Zones
+        const zone_ctx = document.getElementById('zonesGraph').getContext('2d');
+        const weight_zones = JSON.parse(document.getElementById('weight-zones-data').textContent);
+
+        new Chart(zone_ctx, {
+            type: 'pie',
+            data: {
+                labels: weight_zones.map(entry => entry.label),
+                datasets: [{
+                    label: 'BMI',
+                    data: weight_zones.map(entry => entry.count),
+                    backgroundColor: weight_zones.map(entry => getCssVar(entry.color.replace("var(", "").replace(")", ""))),
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+        
+        
+        // Weight Zones
+        // TODO: Complete this graph.
+        const monthly_ctx = document.getElementById('monthlyGraph').getContext('2d');
+        const monthly_avg = JSON.parse(document.getElementById('monthly-avg-data').textContent);
+
+        new Chart(monthly_ctx, {
+            type: 'pie',
+            data: {
+                labels: monthly_avg.labels,
+                datasets: [{
+                    label: 'Weight',
+                    data: monthly_avg.weights,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
     });
-
-    // Bar Graph (Daily Changes)
-    const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
-    const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
-
-    new Chart(weight_change_ctx, {
-        type: 'bar',
-        data: {
-            labels: dailyChanges.map(entry => entry.date),
-            datasets: [{
-                label: 'Daily Change (kg)',
-                data: dailyChanges.map(entry => entry.change),
-                backgroundColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
-                borderColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
-                borderWidth: 1
-            }]
-        },
-        options: { responsive: true }
-    });
-});
 </script>
 {% endblock %}

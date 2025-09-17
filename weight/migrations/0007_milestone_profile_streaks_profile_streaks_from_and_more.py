@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('weight', '0006_auto_20250917_1641'),
+        ('weight', '0005_profile_gender'),
     ]
 
     operations = [
