@@ -8,7 +8,7 @@
         <h2 class="mb-5 text-center">Analytics</h2>
 
         <!-- Main Line Graph -->
-        <div class="card p-3 mb-4">
+        <div class="card p-3 mb-4" style="height: 400px; width: 100%; padding-bottom: 2.5rem !important;">
             <h5 class="card-title">Progress Over Time</h5>
             <canvas id="progressChart"></canvas>
             {{ line_data|json_script:"line-data" }}
@@ -49,6 +49,7 @@
             <h5 class="card-title">Weight Zones</h5>
             <canvas id="zonesGraph"></canvas>
             {{ weight_zones|json_script:"weight-zones-data" }}
+            {{ profile.bmi|json_script:"current-bmi" }}
         </div>
     </div>
 
@@ -88,7 +89,23 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return `${ctx.parsed.y} Kgs`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false   // hides month labels on X-axis
+                        },
+                    },
+                }
             }
         });
 
@@ -111,48 +128,141 @@
             options: { responsive: true }
         });
 
-        
-        // Weight Zones
+        // Weight Zones - Donut with BMI in center
         const zone_ctx = document.getElementById('zonesGraph').getContext('2d');
         const weight_zones = JSON.parse(document.getElementById('weight-zones-data').textContent);
+        const current_bmi = JSON.parse(document.getElementById('current-bmi').textContent);
 
         new Chart(zone_ctx, {
-            type: 'pie',
+            type: 'doughnut',  // donut chart
             data: {
                 labels: weight_zones.map(entry => entry.label),
                 datasets: [{
-                    label: 'BMI',
+                    label: 'BMI Zones',
                     data: weight_zones.map(entry => entry.count),
                     backgroundColor: weight_zones.map(entry => getCssVar(entry.color.replace("var(", "").replace(")", ""))),
-                    hoverOffset: 4
+                    hoverOffset: 6,
+                    borderWidth: 2,
+                    borderColor: "#fff"
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true
-            }
+                maintainAspectRatio: true,
+                cutout: '70%', // makes it a donut
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 12,
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return `${ctx.label}: ${ctx.parsed} days`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'bmiCenterText',
+                beforeDraw: (chart) => {
+                    const { ctx, chartArea: {left, right, top, bottom} } = chart;
+                    ctx.save();
+
+                    const centerX = (left + right) / 2;
+                    const centerY = (top + bottom) / 2;
+
+                    ctx.font = `${(chart.height / 8).toFixed(0)}px ${getCssVar("--bs-font-sans-serif")}, system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = getCssVar('--text-color');
+
+                    const text = current_bmi ? current_bmi.toFixed(1) : "N/A";
+                    ctx.fillText(text, centerX, centerY);
+                    ctx.restore();
+                }
+            }]
         });
         
-        
-        // Weight Zones
-        // TODO: Complete this graph.
+        // Monthly Avg,
         const monthly_ctx = document.getElementById('monthlyGraph').getContext('2d');
         const monthly_avg = JSON.parse(document.getElementById('monthly-avg-data').textContent);
 
         new Chart(monthly_ctx, {
-            type: 'pie',
+            type: 'bar',
             data: {
-                labels: monthly_avg.labels,
-                datasets: [{
-                    label: 'Weight',
-                    data: monthly_avg.weights,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    fill: false
-                }]
+                labels: monthly_avg.map(entry => entry.month),
+                datasets: [
+                    {
+                        label: 'Avg Weight (kg)',
+                        data: monthly_avg.map(entry => entry.avg_weight),
+                        borderColor: getCssVar('--text-color'),
+                        backgroundColor: getCssVar('--text-color'),
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Avg BMI',
+                        data: monthly_avg.map(entry => entry.avg_bmi),
+                        borderColor: getCssVar('--accent-color'),
+                        backgroundColor: getCssVar('--accent-color'),
+                        borderDash: [5, 5], // dashed line to differentiate
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.dataset.label.includes("Weight")) {
+                                    return ctx.parsed.y + " kg";
+                                }
+                                if (ctx.dataset.label.includes("BMI")) {
+                                    return ctx.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Weight (kg)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'BMI'
+                        }
+                    }
+                }
             }
         });
     });

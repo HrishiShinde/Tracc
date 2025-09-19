@@ -135,3 +135,24 @@ p {
         padding-bottom: 50px !important; /* navbar height + some extra spacing */
     }
 }
+
+/* Legend grid styling */
+#bmi-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px 16px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+#bmi-legend li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+}
+#bmi-legend li span {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
