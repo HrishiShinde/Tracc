@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db import connection
 
 from .models import Profile, WeightLog, UserMilestone
-from .utils import Insights, calculate_bmi
+from .utils import Insights, calculate_bmi, update_streaks
 import csv
 import io
 from datetime import datetime
@@ -110,7 +110,8 @@ def dashboard(request):
     logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('date')
 
     # Recent and Latest.
-    recent_logs = logs.order_by('-date')[:5]
+    recent_len = 5
+    recent_logs = logs.order_by('-date')[:recent_len]
     latest_weight = logs.last().weight
 
     # Call Insights class.
@@ -121,8 +122,7 @@ def dashboard(request):
     bmi_data = calculate_bmi(latest_weight, profile.height_cm)
 
     # Graphs processing.
-    line_data = insights.get_line_data()
-    daily_changes = insights.get_daily_change()
+    line_data = insights.get_line_data(recent_len)
 
     context = {
         'profile': profile,
@@ -131,8 +131,7 @@ def dashboard(request):
         'progress': progress,
         'progress_offset': progress_offset,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
-        'line_data': line_data,
-        'daily_changes': daily_changes
+        'line_data': line_data
     }
     return render(request, 'pages/dashboard.html', context)
 
@@ -154,7 +153,7 @@ def add_or_edit_weight_log(request, pk=None):
     if request.method == 'POST':
         weight = request.POST.get('weight')
         notes = request.POST.get('notes', '')
-        check_in = request.POST.get('check_in') == 'true'  # button sends 'true' if clicked
+        check_in = request.POST.get('check_in') == 'true'
 
         if pk:
             # Editing existing log
@@ -169,14 +168,21 @@ def add_or_edit_weight_log(request, pk=None):
             log.bmi = calculate_bmi(weight, profile.height_cm).get("value")
         log.notes = notes
 
+        # Today's clock in.
         if check_in:
             log.check_in = True
             log.check_in_at = timezone.now()
 
+        # Save logs.
         log.save()
+
+        # Update Streaks.
+        if created:
+            update_streaks(profile) 
+    
         if not weight:
             return redirect('dashboard')
-        return redirect('weightlog_list')  # ya dashboard, jahan se call ho raha hai
+        return redirect('weightlog_list')
 
 
 # ---------- Delete Logs ----------
@@ -278,7 +284,6 @@ def analytics(request):
         "fastest_drop": fastest_drop,
     }
     return render(request, "pages/analytics.html", context)
-
 
 
 # ---------- Health ----------

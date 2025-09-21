@@ -156,3 +156,42 @@ p {
     height: 14px;
     border-radius: 3px;
 }
+
+/* Graph cards */
+.graph-card {
+    height: 400px !important;
+    width: 100%;
+    padding: 1rem 1rem 2.5rem 1rem !important;
+}
+
+.card-analytic {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: var(--bs-card-bg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-analytic::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 4px 4px 0 0;
+}
+
+.card-analytic:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.analytics-scroll {
+    padding-bottom: 6px;
+    gap: 10px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.analytics-scroll::-webkit-scrollbar {
+  display: none;
+}

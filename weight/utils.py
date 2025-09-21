@@ -1,3 +1,41 @@
+from .models import Profile
+
+def update_streaks(profile=None):
+    profiles = Profile.objects.all()
+    if profile:
+        profiles = [profile]
+
+    for profile in profiles:
+        logs = profile.weightlog_set.filter(check_in=True).order_by("check_in_at")
+        prev_log = None
+        streaks = 0
+        streaks_from = None
+
+        for log in logs:
+            if prev_log:
+                gap = (log.check_in_at.date() - prev_log.check_in_at.date()).days
+
+                if gap == 1:
+                    streaks += 1
+                elif gap == 2 and prev_log.check_in_at.isoweekday() == 6:
+                    streaks += 1
+                else:
+                    streaks = 1
+                    streaks_from = log.check_in_at
+            else:
+                streaks = 1
+                streaks_from = log.check_in_at
+
+            prev_log = log
+
+        profile.streaks = streaks
+        if streaks_from:
+            profile.streaks_from = streaks_from
+
+        profile.save()
+
+    return None
+
 
 def calculate_bmi(weight, height):
     height_m = height / 100
@@ -45,12 +83,13 @@ class Insights:
 
         return progress, progress_offset
 
-    def get_line_data(self):
+    def get_line_data(self, recent_len=None):
         line_data = {}
+        logs = self.logs[:recent_len] if recent_len else self.logs
         if self.logs:
             line_data = {
-                "labels": [log.date.strftime('%d-%m-%Y') for log in self.logs],
-                "weights": [log.weight for log in self.logs]
+                "labels": [log.date.strftime('%d-%m-%Y') for log in logs],
+                "weights": [log.weight for log in logs]
             }
         return line_data
 
@@ -120,7 +159,7 @@ class Insights:
             {
                 "label": zone,
                 "count": count,
-                "color": f"var(--bmi-{zone.lower()})"
+                "color": f"--bmi-{zone.lower()}"
             }
             for zone, count in zones.items() 
         ]

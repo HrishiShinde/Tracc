@@ -8,7 +8,7 @@
         <h2 class="mb-5 text-center">Analytics</h2>
 
         <!-- Main Line Graph -->
-        <div class="card p-3 mb-4" style="height: 400px; width: 100%; padding-bottom: 2.5rem !important;">
+        <div class="card mb-4 graph-card">
             <h5 class="card-title">Progress Over Time</h5>
             <canvas id="progressChart"></canvas>
             {{ line_data|json_script:"line-data" }}
@@ -16,27 +16,30 @@
     </div>
 
     <!-- Side Scroll Mini Cards -->
-    <div class="d-flex flex-row flex-nowrap overflow-auto mb-3">
-        <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
-            <h6>Streaks</h6>
-            <p class="fs-3r me-3">🔥{{streaks}}</p>
+    <div class="d-flex flex-row flex-nowrap overflow-auto mb-3 analytics-scroll">
+        <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+            <h6 class="fw-bold">Streaks</h6>
+            <p class="fs-3r mb-0"><i class="bi bi-fire text-warning"></i> {{streaks}}</p>
         </div>
-        <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
-            <h6>Milestones</h6>
-            <p class="fs-3r">🏆</p>
-            <p class="small" style="margin-top: 0px !important;">{{milestones.title}}</p>
+        
+        <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+            <h6 class="fw-bold text-gold">Milestone</h6>
+            <p class="mb-0 d-flex justify-content-between align-items-center">
+                <i class="bi bi-award fs-3r" style="color: #FFD700;"></i> {{milestones.title}}
+            </p>
         </div>
-        <div class="card text-center me-2 p-2 flex-shrink-0" style="min-width: 120px;">
-            <h6>Fastest Drop</h6>
-            <p class="fs-3r">{{fastest_drop.drop}}</p>
-            <p style="margin-top: 0px !important;">kg/week</p>
+        
+        <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+            <h6 class="fw-bold">Fastest Drop</h6>
+            <p class="fs-2 mb-0">{{fastest_drop.drop}} <small class="text-muted">kg/week</small></p>
         </div>
+        <!-- <i class="bi bi-graph-down"></i>  -->
         <!-- add more mini cards here -->
     </div>
 
     <!-- Daily Weight Change Bar Graph -->
     <div class="col-12 col-sm-12 col-md-10 col-lg-8">
-        <div class="card p-3 mb-4">
+        <div class="card mb-4 graph-card">
             <h5 class="card-title">Daily Change</h5>
             <canvas id="weightChangeChart"></canvas>
             {{ daily_changes|json_script:"daily-changes-data" }}
@@ -45,7 +48,7 @@
 
     <!-- Weight Zones -->
     <div class="col-12 col-sm-12 col-md-10 col-lg-8">
-        <div class="card p-3 mb-4">
+        <div class="card mb-4 graph-card">
             <h5 class="card-title">Weight Zones</h5>
             <canvas id="zonesGraph"></canvas>
             {{ weight_zones|json_script:"weight-zones-data" }}
@@ -55,7 +58,7 @@
 
     <!-- Monthly Average -->
     <div class="col-12 col-sm-12 col-md-10 col-lg-8">
-        <div class="card p-3 mb-4">
+        <div class="card mb-4 graph-card">
             <h5 class="card-title">Monthly Average</h5>
             <canvas id="monthlyGraph"></canvas>
             {{ monthly_avg|json_script:"monthly-avg-data" }}
@@ -125,7 +128,10 @@
                     borderWidth: 1
                 }]
             },
-            options: { responsive: true }
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+            }
         });
 
         // Weight Zones - Donut with BMI in center
@@ -140,7 +146,7 @@
                 datasets: [{
                     label: 'BMI Zones',
                     data: weight_zones.map(entry => entry.count),
-                    backgroundColor: weight_zones.map(entry => getCssVar(entry.color.replace("var(", "").replace(")", ""))),
+                    backgroundColor: weight_zones.map(entry => getCssVar(entry.color)),
                     hoverOffset: 6,
                     borderWidth: 2,
                     borderColor: "#fff"
@@ -148,7 +154,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 cutout: '70%', // makes it a donut
                 plugins: {
                     legend: {
@@ -218,7 +224,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 interaction: {
                     mode: 'index',
                     intersect: false
