@@ -554,3 +554,133 @@ body {
   background-image: linear-gradient(var(--bmi-obese) -50%, var(--card-color) 100%);
   border-bottom-color: var(--border-bottom-color) !important;
 }
+
+/*
+=====================
+  Calendar Styling
+===================== 
+*/
+
+/* Main Calendar Container */
+.fc {
+  background-color: var(--card-color) !important;
+  color: var(--text-color) !important;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  font-family: inherit;
+}
+
+/* Toolbar */
+.fc-toolbar {
+  background: var(--card-color) !important;
+  color: var(--text-color) !important;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Toolbar Buttons */
+.fc .fc-button {
+  background-color: var(--bs-primary) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  padding: 0.4rem 0.8rem !important;
+  font-size: 0.875rem !important;
+  transition: filter 0.2s ease;
+}
+.fc .fc-button:hover {
+  filter: brightness(90%);
+}
+.fc .fc-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Day Numbers */
+.fc-daygrid-day-number {
+  color: var(--text-color) !important;
+  font-weight: 500;
+  padding: 0.4rem;
+}
+
+/* Today Highlight */
+.fc-day-today {
+  background: rgba(var(--bs-primary-rgb, 0, 153, 255), 0.1) !important;
+  border: 1px solid var(--bs-primary) !important;
+}
+
+/* Events */
+.fc-event {
+  background-color: var(--bs-primary) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+.fc-event:hover {
+  transform: scale(1.03);
+}
+
+/* Grid Borders */
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: 1px solid var(--border-bottom-color) !important;
+}
+
+/* Hover on Day Cell */
+.fc-daygrid-day-frame {
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+.fc-daygrid-day-frame:hover {
+  background: rgba(var(--bs-primary-rgb, 0, 153, 255), 0.05);
+}
+
+/* =====================
+   Calendar Week Header + Day Names
+===================== */
+
+/* Weekday Header (Mon, Tue...) */
+.fc-col-header-cell {
+  background-color: var(--navbar-color) !important;
+  color: var(--text-color) !important;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-bottom-color);
+}
+
+/* Make weekday names not look like links */
+.fc-col-header-cell-cushion {
+  color: var(--text-color) !important;
+  text-decoration: none !important;
+  cursor: default !important;
+}
+
+/* Hover effect on weekday headers (optional) */
+.fc-col-header-cell:hover {
+  background-color: rgba(var(--bs-primary-rgb, 0, 153, 255), 0.05);
+}
+
+/* Week numbers (if using) */
+.fc .fc-week-number {
+  color: var(--text-color) !important;
+  font-weight: 500;
+}
+
+/* Day numbers inside day cells */
+.fc-daygrid-day-number {
+  color: var(--text-color) !important;
+  font-weight: 500;
+  text-decoration: none !important;
+}
+
+/* Optional: subtle hover on day cells */
+.fc-daygrid-day-frame:hover {
+  background: rgba(var(--bs-primary-rgb, 0, 153, 255), 0.05);
+  cursor: pointer;
+}
+

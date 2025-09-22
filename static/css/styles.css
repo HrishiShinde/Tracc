@@ -34,8 +34,8 @@ p {
     margin-bottom: -2px !important;
 }
 
-.modal-dialog {
-    top: 30%;
+.adit-modal {
+    top: 25%;
 }
 
 .bg-blur {
@@ -195,3 +195,8 @@ p {
 .analytics-scroll::-webkit-scrollbar {
   display: none;
 }
+
+#calendar {
+  max-width: 100%;
+}
+
