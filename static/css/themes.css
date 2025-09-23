@@ -612,12 +612,12 @@ body {
 
 /* Events */
 .fc-event {
-  background-color: var(--bs-primary) !important;
+  background-color: transparent !important;
   border: none !important;
   color: #fff !important;
   border-radius: 6px;
   padding: 2px 4px;
-  font-size: 0.8rem;
+  font-size: 1.5rem;
   transition: transform 0.2s ease;
 }
 .fc-event:hover {
@@ -640,7 +640,7 @@ body {
 }
 
 /* =====================
-   Calendar Week Header + Day Names
+  Calendar Week Header + Day Names
 ===================== */
 
 /* Weekday Header (Mon, Tue...) */
@@ -682,5 +682,19 @@ body {
 .fc-daygrid-day-frame:hover {
   background: rgba(var(--bs-primary-rgb, 0, 153, 255), 0.05);
   cursor: pointer;
+}
+
+.check-in-icon{
+  color: var(--bmi-normal) !important;
+}
+.streaks-icon{
+  color: var(--bmi-overweight) !important;
+}
+
+.fc .fc-daygrid-body-natural .fc-daygrid-day-events {
+  margin-bottom: 0px !important;
+}
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: 3em !important;
 }
 

@@ -11,7 +11,7 @@ from .models import Profile, WeightLog, UserMilestone
 from .utils import Insights, calculate_bmi, update_streaks
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ---------- Register ----------
 def register_view(request):
@@ -273,6 +273,31 @@ def analytics(request):
     fastest_drop = insights.get_fastest_drop()
     milestones = UserMilestone.objects.filter(profile=profile).last().milestone
 
+    # Calendar events.
+    streak_events = []
+    streak_dates = set()
+    if profile.streaks and profile.streaks_from:
+        for i in range(profile.streaks):
+            streak_day = profile.streaks_from + timedelta(days=i)
+            formatted_date = streak_day.strftime("%Y-%m-%d")
+            streak_dates.add(formatted_date)
+            streak_events.append({
+                "type": "streak",
+                "date": formatted_date
+            })
+
+    checkin_logs = logs.filter(check_in=True)
+    checkins = [
+        {
+            "type": "checkin",
+            "date": log.date.strftime("%Y-%m-%d")
+        }
+        for log in checkin_logs
+        if log.date.strftime("%Y-%m-%d") not in streak_dates
+    ]
+
+    calendar_events = checkins + streak_events
+
     context = {
         "profile": profile,
         "line_data": line_data,
@@ -282,6 +307,7 @@ def analytics(request):
         "streaks": streaks,
         "milestones": milestones,
         "fastest_drop": fastest_drop,
+        "calendar_events": calendar_events,
     }
     return render(request, "pages/analytics.html", context)
 

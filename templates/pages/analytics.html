@@ -21,7 +21,7 @@
             data-bs-toggle="modal" data-bs-target="#calendarModal"
         >
             <h6 class="fw-bold">Streaks</h6>
-            <p class="fs-3r mb-0"><i class="bi bi-fire text-warning"></i> {{streaks}}</p>
+            <p class="fs-3r mb-0"><i class="bi bi-fire streaks-icon"></i> {{streaks}}</p>
         </div>
         
         <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
@@ -78,6 +78,7 @@
             </div>
             <div class="modal-body">
                 <div id="calendar"></div>
+                {{ calendar_events|json_script:"calendar-events" }}
             </div>
         </div>
     </div>
@@ -93,6 +94,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         const calendarEl = document.getElementById('calendar');
+        const events = JSON.parse(document.getElementById("calendar-events").textContent);
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -106,6 +108,22 @@
             },
             dateClick: function(info) {
                 alert('Date clicked: ' + info.dateStr);
+            },
+            events: events.map(ev => ({
+                start: ev.date,
+                allDay: true,
+                extendedProps: { type: ev.type }
+            })),
+            eventContent: function(arg) {
+                let iconHtml = '';
+                if (arg.event.extendedProps.type === "streak") {
+                    iconHtml = `<i class="bi bi-fire streaks-icon"></i>`;
+                } else if (arg.event.extendedProps.type === "checkin") {
+                    iconHtml = `<i class="bi bi-check2 check-in-icon"></i>`;
+                }
+                return { 
+                    html: `<div class="fc-event-icon">${iconHtml}</div>` 
+                };
             }
         });
 

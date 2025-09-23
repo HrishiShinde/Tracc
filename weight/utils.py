@@ -39,7 +39,7 @@ def update_streaks(profile=None):
 
 def calculate_bmi(weight, height):
     height_m = height / 100
-    bmi = round(weight / (height_m ** 2), 2)
+    bmi = round(float(weight) / (height_m ** 2), 2)
 
     # BMI Styles and details.
     if bmi < 18.5:
