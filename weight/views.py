@@ -177,7 +177,7 @@ def add_or_edit_weight_log(request, pk=None):
         log.save()
 
         # Update Streaks.
-        if created:
+        if log.check_in and log.weight:
             update_streaks(profile) 
     
         if not weight:
@@ -276,7 +276,7 @@ def analytics(request):
     # Calendar events.
     streak_events = []
     streak_dates = set()
-    if profile.streaks and profile.streaks_from:
+    if profile.streaks and profile.streaks > 1 and profile.streaks_from:
         for i in range(profile.streaks):
             streak_day = profile.streaks_from + timedelta(days=i)
             formatted_date = streak_day.strftime("%Y-%m-%d")

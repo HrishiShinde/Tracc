@@ -21,13 +21,19 @@
             data-bs-toggle="modal" data-bs-target="#calendarModal"
         >
             <h6 class="fw-bold">Streaks</h6>
-            <p class="fs-3r mb-0"><i class="bi bi-fire streaks-icon"></i> {{streaks}}</p>
+            <p class="fs-3r mb-0">
+                <i class="bi bi-fire streaks-icon front-icon"></i>
+                <span class="inner-fire"></span>
+                {{streaks}}
+            </p>
         </div>
         
         <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
             <h6 class="fw-bold text-gold">Milestone</h6>
             <p class="mb-0 d-flex justify-content-between align-items-center">
-                <i class="bi bi-award fs-3r" style="color: #FFD700;"></i> {{milestones.title}}
+                <i class="bi bi-award fs-3r"></i>
+                <span class="inner-medal"></span>
+                {{milestones.title}}
             </p>
         </div>
         
@@ -70,7 +76,7 @@
 
 <!-- Calendar Modal -->
 <div class="modal fade bg-blur" id="calendarModal" tabindex="-1" >
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-3">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">Streaks</h5>
@@ -117,7 +123,7 @@
             eventContent: function(arg) {
                 let iconHtml = '';
                 if (arg.event.extendedProps.type === "streak") {
-                    iconHtml = `<i class="bi bi-fire streaks-icon"></i>`;
+                    iconHtml = `<i class="bi bi-fire streaks-icon front-icon"></i><span class="mini-inner-fire"></span>`;
                 } else if (arg.event.extendedProps.type === "checkin") {
                     iconHtml = `<i class="bi bi-check2 check-in-icon"></i>`;
                 }

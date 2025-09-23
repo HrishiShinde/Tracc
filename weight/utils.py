@@ -6,7 +6,7 @@ def update_streaks(profile=None):
         profiles = [profile]
 
     for profile in profiles:
-        logs = profile.weightlog_set.filter(check_in=True).order_by("check_in_at")
+        logs = profile.weightlog_set.filter(check_in=True).exclude(weight__isnull=True).order_by("check_in_at")
         prev_log = None
         streaks = 0
         streaks_from = None

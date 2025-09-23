@@ -211,3 +211,50 @@ p {
     color: inherit; /* you can also set green/orange per icon */
     pointer-events: none; /* so clicks go to the cell, not icon */
 }
+
+.card-analytic p {
+    position: relative; /* Create a positioning context */
+}
+
+.inner-medal {
+    background-color: #4B0082;
+    height: 31px;
+    width: 30px;
+    border-radius: 17px;
+    position: absolute;
+    left: 8%;
+    top: 12%;
+    z-index: 1;
+}
+
+.bi-award {
+    color: #C0C0C0 !important;
+}
+
+
+.inner-fire {
+    background-color: orange;
+    height: 31px;
+    width: 30px;
+    border-radius: 17px;
+    position: absolute;
+    left: 20%;
+    top: 28%;
+    z-index: 1;
+}
+
+.mini-inner-fire {
+    background-color: orange;
+    height: 15px;
+    width: 14px;
+    border-radius: 17px;
+    position: absolute;
+    left: 35%;
+    top: 28%;
+    z-index: 1;
+}
+
+.front-icon {
+    position: relative;
+    z-index: 2;
+}
