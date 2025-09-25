@@ -117,14 +117,6 @@
                 {{ line_data|json_script:"line-data" }}
             </div>
         </div>
-    
-        <div class="col-md-6 mb-4">
-            <div class="card p-3 h-100">
-                <h5 class="card-title">Daily Weight Change</h5>
-                <canvas id="weightChangeChart" style="width:100%; height:200px;"></canvas>
-                {{ daily_changes|json_script:"daily-changes-data" }}
-            </div>
-        </div>
     </div>
     
 
@@ -211,46 +203,6 @@
                             suggestedMin: minWeight - 2,
                             suggestedMax: maxWeight + 2
                         }
-                    }
-                }
-            });
-
-            // Weight Change graph.
-            const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
-            const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
-            const labels = dailyChanges.map(entry => entry.date);
-            const data = dailyChanges.map(entry => entry.change);
-
-            new Chart(weight_change_ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Daily Weight Change (kg)',
-                        data: data,
-                        backgroundColor: data.map(change => change < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
-                        borderColor: data.map(change => change < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        },
-                        y: {
-                                title: {
-                                    display: true,
-                                    text: 'Weight (kg)'
-                                },
-                                beginAtZero: false,
-                                suggestedMin: -2,
-                                suggestedMax: 2
-                            }
                     }
                 }
             });
