@@ -216,8 +216,16 @@ p {
     position: relative; /* Create a positioning context */
 }
 
+.bi-award {
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
+    background-clip: text;              /* standard */
+    -webkit-background-clip: text;      /* for Chrome/Safari */
+    -webkit-text-fill-color: transparent;
+    color: transparent;                 /* fallback */
+}
+
 .inner-medal {
-    background-color: #4B0082;
+    background: linear-gradient(45deg, #FF69B4, #8A2BE2);
     height: 31px;
     width: 30px;
     border-radius: 17px;
@@ -225,12 +233,9 @@ p {
     left: 8%;
     top: 12%;
     z-index: 1;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
 }
-
-.bi-award {
-    color: #C0C0C0 !important;
-}
-
 
 .inner-fire {
     background-color: orange;
@@ -257,4 +262,8 @@ p {
 .front-icon {
     position: relative;
     z-index: 2;
+}
+
+.list-group-item {
+    cursor: pointer;
 }

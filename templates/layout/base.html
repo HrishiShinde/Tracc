@@ -41,6 +41,7 @@
                     {% if request.user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'weightlog_list' %}">Logs</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">Analytics</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'settings' %}">Settings</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
                     {% else %}
@@ -85,6 +86,8 @@
     {% endif  %} -->
 
     <!-- Bottom Navbar -->
+     
+    {% if request.user.is_authenticated %}
     <nav class="bottom-navbar d-lg-none">
         <a href="{% url 'dashboard' %}" class="nav-item text-center">
             <i class="bi bi-house-door"></i>
@@ -114,6 +117,7 @@
             <span>Settings</span>
         </a>
     </nav>
+    {% endif %}
 
         
     <!-- Add/Edit Modal -->

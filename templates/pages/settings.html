@@ -87,7 +87,14 @@
                     <button type="submit" class="btn btn-outline-success btn-sm">
                         <i class="bi bi-upload"></i> Import Logs
                     </button>
+                    <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-download"></i> Export Logs
+                    </a>
                 </form>
+            </div>
+            <!-- Export Logs -->
+            <div class="mb-4">
+                <h5 class="fw-semibold mb-3">Export your data</h5>
             </div>
 
             <hr>
@@ -95,9 +102,9 @@
             <!-- Account Section -->
             <div class="mb-4">
                 <h5 class="fw-semibold mb-3">Account</h5>
-                <button class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
             </div>
         </div>
     </div>
