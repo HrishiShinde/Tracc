@@ -14,7 +14,11 @@
         <!-- Logs List -->
         <ul class="list-group">
             {% for log in logs %}
-            <li class="list-group-item d-flex justify-content-between">
+            <li 
+                class="list-group-item d-flex justify-content-between" 
+                data-bs-toggle="modal" data-bs-target="#addEditModal"
+                onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
+            >
                 <div>
                     <strong>{{ log.date }}</strong> - {{ log.weight }} kg
                     <br>
@@ -32,7 +36,7 @@
                                 <button 
                                     class="dropdown-item" data-bs-toggle="modal" 
                                     data-bs-target="#addEditModal" type="button"
-                                    onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
+                                    onclick="event.stopPropagation(); openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
                                 >
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </button>
@@ -41,7 +45,7 @@
                                 <button 
                                     class="dropdown-item text-danger" type="button"
                                     data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                    onclick="openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
+                                    onclick="event.stopPropagation(); openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
                                 >
                                     <i class="bi bi-trash"></i> Delete
                                 </button>

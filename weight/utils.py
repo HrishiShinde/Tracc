@@ -1,4 +1,221 @@
-from .models import Profile
+from .models import Milestone, UserMilestone, Profile, WeightLog
+
+
+def _assign_milestone(profile, milestone_title):
+    milestone = Milestone.objects.get(title=milestone_title)
+    obj, created = UserMilestone.objects.get_or_create(profile=profile, milestone=milestone)
+    if created:
+        print(f"🏅 {profile.user.username} achieved: {milestone.title}")
+
+def check_for_achievements(profile):
+    logs = profile.weightlog_set.exclude(weight__isnull=True).order_by("date")
+    streaks = profile.streaks
+    
+    # Streak milestones
+    for milestone in Milestone.objects.filter(category="streak"):
+        if streaks == milestone.value:
+            _assign_milestone(profile, milestone.title)
+
+    for log in logs:
+        current_weight = log.weight
+        current_bmi = log.bmi
+
+        # Weight loss milestones
+        starting_weight = logs.first().weight
+        weight_lost = starting_weight - current_weight
+        for milestone in Milestone.objects.filter(category="weight_loss"):
+            if weight_lost >= milestone.value:
+                _assign_milestone(profile, milestone.title)
+
+        # BMI milestones
+        for milestone in Milestone.objects.filter(category="bmi_target"):
+            if current_bmi <= milestone.value:
+                _assign_milestone(profile, milestone.title)
+
+        # TODO: Add other milestone types here.
+
+
+def seed_milestones():
+    MILESTONES = [
+        # 📉 Weight Loss
+        {
+            "title": "First Step",
+            "description": "Logged your first weight entry 🎉",
+            "category": "weight_loss",
+            "value": 0,
+        },
+        {
+            "title": "First 2 Kg Down",
+            "description": "Lost your first 2 kilograms 🎉",
+            "category": "weight_loss",
+            "value": 2,
+        },
+        {
+            "title": "5Kg Down",
+            "description": "Lost 5 kilograms 🏆",
+            "category": "weight_loss",
+            "value": 5,
+        },
+        {
+            "title": "10Kg Warrior",
+            "description": "Lost 10 kilograms 🔥",
+            "category": "weight_loss",
+            "value": 10,
+        },
+        {
+            "title": "20Kg Beast Mode",
+            "description": "Lost 20 kilograms 💪",
+            "category": "weight_loss",
+            "value": 20,
+        },
+
+        # ⚖️ BMI Based
+        {
+            "title": "Normal BMI Ninja",
+            "description": "Entered the normal BMI range (18.5-24.9) ✨",
+            "category": "bmi",
+            "value": 24.9,
+        },
+        {
+            "title": "Obese Crusher",
+            "description": "Moved from Obese to Overweight category 👏",
+            "category": "bmi",
+            "value": 0,
+        },
+        {
+            "title": "Overweight Slayer",
+            "description": "Moved from Overweight to Normal BMI category 🥳",
+            "category": "bmi",
+            "value": 0,
+        },
+
+        # 🎯 Target
+        {
+            "title": "Bullseye!",
+            "description": "Reached your target weight 🎯",
+            "category": "target_weight",
+            "value": 1,
+        },
+        {
+            "title": "Target Maintainer",
+            "description": "Maintained your target weight for 30 days ✅",
+            "category": "target_weight",
+            "value": 30,
+        },
+
+        # 🔥 Streaks
+        {
+            "title": "7-Day Hustler",
+            "description": "Logged weight for 7 days in a row 🔥",
+            "category": "streak",
+            "value": 7,
+        },
+        {
+            "title": "30-Day Champ",
+            "description": "Logged weight for 30 days in a row 🐉",
+            "category": "streak",
+            "value": 30,
+        },
+        {
+            "title": "100-Day Legend",
+            "description": "Logged weight for 100 days in a row 💯",
+            "category": "streak",
+            "value": 100,
+        },
+
+        # 📊 Consistency
+        {
+            "title": "Deca Logger",
+            "description": "Logged your weight 10 times 📊",
+            "category": "log_count",
+            "value": 10,
+        },
+        {
+            "title": "50 Logs Hero",
+            "description": "Logged your weight 50 times 📈",
+            "category": "log_count",
+            "value": 50,
+        },
+        {
+            "title": "Consistency King/Queen",
+            "description": "Logged your weight 100 times 🏅",
+            "category": "log_count",
+            "value": 100,
+        },
+    ]
+
+    # Seed milestones
+    for milestone_data in MILESTONES:
+        milestone, created = Milestone.objects.get_or_create(
+            title=milestone_data["title"],
+            defaults=milestone_data,
+        )
+        if created:
+            print(f"🌱 Created milestone: {milestone.title}")
+        else:
+            print(f"⚠️ Already exists: {milestone.title}")
+
+    # Assign milestones to users
+    for profile in Profile.objects.all():
+        check_for_achievements(profile)
+
+
+def calculate_bmi(weight, height):
+    height_m = height / 100
+    bmi = round(float(weight) / (height_m ** 2), 2)
+
+    # BMI Styles and details.
+    if bmi < 18.5:
+        bmi_class = "Underweight"
+        style = "bmi-underweight"
+    elif bmi < 25:
+        bmi_class = "Normal"
+        style = "bmi-normal"
+    elif bmi < 30:
+        bmi_class = "Overweight"
+        style = "bmi-overweight"
+    else:
+        bmi_class = "Obese"
+        style = "bmi-obese"
+
+    bmi_data = {
+        "value": bmi,
+        "class": bmi_class,
+        "style": style
+    }
+    return bmi_data
+
+
+def update_all_bmis():
+    # Inform when the process starts
+    print("🚀 Starting BMI update of all weight logs...")
+    
+    # Fetch all WeightLog records where weight is not null
+    logs = WeightLog.objects.exclude(weight__isnull=True)
+    total_logs = logs.count()
+    print(f"ℹ️  Found {total_logs} weight logs to update.")
+
+    for log in logs:
+        height = log.profile.height_cm
+        weight = log.weight
+
+        # Print current processing log
+        print(f"🔧 Processing log ID: {log.id}, Weight: {weight} kg, Height: {height} cm")
+
+        # Calculate BMI using utility function
+        bmi_data = calculate_bmi(weight, height)
+        log.bmi = bmi_data.get("value")
+
+        print(f"✅ Updated BMI for log ID {log.id}: {bmi_data}")
+
+        updated_count += 1
+
+    # Perform bulk update for performance
+    WeightLog.objects.bulk_update(logs, ['bmi'], batch_size=100)
+
+    # Final message after update is complete
+    print(f"🎯 Successfully updated BMI for {updated_count} logs.")
+
 
 def update_streaks(profile=None):
     profiles = Profile.objects.all()
@@ -36,31 +253,6 @@ def update_streaks(profile=None):
 
     return None
 
-
-def calculate_bmi(weight, height):
-    height_m = height / 100
-    bmi = round(float(weight) / (height_m ** 2), 2)
-
-    # BMI Styles and details.
-    if bmi < 18.5:
-        bmi_class = "Underweight"
-        style = "bmi-underweight"
-    elif bmi < 25:
-        bmi_class = "Normal"
-        style = "bmi-normal"
-    elif bmi < 30:
-        bmi_class = "Overweight"
-        style = "bmi-overweight"
-    else:
-        bmi_class = "Obese"
-        style = "bmi-obese"
-
-    bmi_data = {
-        "value": bmi,
-        "class": bmi_class,
-        "style": style
-    }
-    return bmi_data
 
 class Insights:
     def __init__(self, logs):

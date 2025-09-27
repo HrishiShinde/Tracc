@@ -3,12 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
 
 from .models import Profile, WeightLog, UserMilestone
-from .utils import Insights, calculate_bmi, update_streaks
+from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 import csv
 import io
 from datetime import datetime, timedelta
@@ -176,9 +176,10 @@ def add_or_edit_weight_log(request, pk=None):
         # Save logs.
         log.save()
 
-        # Update Streaks.
+        # Update Streaks and check achievements.
         if log.check_in and log.weight:
-            update_streaks(profile) 
+            update_streaks(profile)
+            check_for_achievements(profile)
     
         if not weight:
             return redirect('dashboard')
@@ -253,6 +254,29 @@ def import_logs(request):
     messages.error(request, "No file uploaded.")
     return redirect("settings")
 
+# ---------- Export Logs ----------
+@login_required
+def export_logs(request):
+    profile = request.user.profile
+    logs = profile.weightlog_set.all().order_by("date")
+
+    # Create the HttpResponse with CSV header
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="weight_logs.csv"'
+
+    writer = csv.writer(response)
+    # Write header row (same as import)
+    writer.writerow(["Date", "Weight (kg)", "Notes/Mood"])
+
+    # Write logs
+    for log in logs:
+        writer.writerow([
+            log.date.strftime("%d/%m/%y"),  # same format as import
+            log.weight if log.weight is not None else "",
+            log.notes or ""
+        ])
+
+    return response
 
 # ---------- Analytics ----------
 @login_required
