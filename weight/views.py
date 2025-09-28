@@ -7,7 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
 
-from .models import Profile, WeightLog, UserMilestone
+from .models import Profile, WeightLog, UserMilestone, WeeklySummary
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 import csv
 import io
@@ -123,6 +123,9 @@ def dashboard(request):
 
     # Graphs processing.
     line_data = insights.get_line_data(recent_len)
+    
+    # latest summary for the logged-in user
+    summary = WeeklySummary.objects.filter(user=request.user).order_by('-week_start').first()
 
     context = {
         'profile': profile,
@@ -131,7 +134,8 @@ def dashboard(request):
         'progress': progress,
         'progress_offset': progress_offset,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
-        'line_data': line_data
+        'line_data': line_data,
+        'summary': summary,
     }
     return render(request, 'pages/dashboard.html', context)
 

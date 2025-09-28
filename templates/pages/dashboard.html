@@ -95,6 +95,35 @@
             {% endif %}
         </div>
 
+        <!-- Weekly Summary! -->
+        <!-- {% if summary and not summary.has_checked %}
+        <div 
+            class="summary-card mb-5 d-flex justify-content-between align-items-center"
+            data-bs-toggle="modal" 
+            data-bs-target="#summaryModal"
+        >
+            Your Weekly Summary is ready!
+            <i class="bi bi-box-arrow-in-right"></i>
+        </div>
+        {% endif %} -->
+            
+        <!-- Weekly Summary Trigger Card -->
+        {% if summary and not summary.has_checked %}
+        <div 
+            class="summary-card mb-4"
+            data-bs-toggle="modal" 
+            data-bs-target="#summaryModal"
+        >
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1 fw-bold">Your Weekly Summary is Ready!</h5>
+                    <small class="text-muted">Tap to view your progress</small>
+                </div>
+                <i class="bi bi-box-arrow-in-right fs-3r"></i>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Recent Logs -->
         <h4 class="mb-3">Recent Weight Logs</h4>
         <ul class="list-group mb-4">
@@ -118,7 +147,80 @@
             </div>
         </div>
     </div>
-    
+
+
+    <!-- Weekly Summary Modal -->
+    <div class="modal fade" id="summaryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 shadow-lg border-0">
+
+                <!-- Header -->
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="modal-title fw-bold">Your Week in Review</h4>
+                    <!-- Week Dates -->
+                    <p class="text-muted small mb-4">
+                        {{ summary.week_start|date:"j M" }} - {{ summary.week_end|date:"j M" }}
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <!-- Key Stats Row -->
+                    <div class="mb-4">
+                        <p class="mb-1">
+                            <strong>Average Weight:</strong> {{ summary.avg_weight }} kg  
+                            <span class="{% if summary.change_from_last_week > 0 %}text-danger{% elif summary.change_from_last_week < 0 %}text-success{% else %}text-muted{% endif %}">
+                                ({{ summary.change_from_last_week }} kg from last week)
+                            </span>
+                        </p>
+                        <p class="text-muted">
+                            Your weight averaged at <strong>{{ summary.avg_weight }} kg</strong> last week,  
+                            which was <strong>{{ summary.change_from_last_week }} kg</strong> 
+                            {% if summary.change_from_last_week > 0 %} more {% elif summary.change_from_last_week < 0 %} less {% else %} same as {% endif %}
+                            than the previous week.
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>BMI Status:</strong> 
+                            <span class="badge rounded-pill px-3 py-2 
+                                {% if summary.bmi_status == 'Normal' %} bg-success-subtle text-success 
+                                {% elif summary.bmi_status == 'Overweight' %} bg-warning-subtle text-warning 
+                                {% else %} bg-danger-subtle text-danger {% endif %}">
+                                {{ summary.bmi_status }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <!-- Highlights -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Highlights</h6>
+                        <ul class="list-unstyled mb-0">
+                            {% for key, value in summary.highlights.items %}
+                                <li class="mb-1">- {{ value }}</li>
+                            {% empty %}
+                                <li>No highlights available</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Graph -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2">Weight Trend</h6>
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-primary rounded-pill px-4">
+                        Go to Analytics
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
