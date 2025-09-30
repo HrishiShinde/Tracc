@@ -150,7 +150,7 @@
 
 
     <!-- Weekly Summary Modal -->
-    <div class="modal fade" id="summaryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade bg-blur" id="summaryModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content rounded-4 shadow-lg border-0">
 
@@ -166,6 +166,10 @@
 
                 <!-- Body -->
                 <div class="modal-body">
+
+                    <!-- page one: Graph, avg weight text. 
+                    page two: Highlights -->
+
                     <!-- Key Stats Row -->
                     <div class="mb-4">
                         <p class="mb-1">
@@ -207,9 +211,9 @@
                     <!-- Graph -->
                     <div class="mb-3">
                         <h6 class="fw-bold mb-2">Weight Trend</h6>
-                        <canvas id="weeklyChart"></canvas>
+                        <canvas id="summChart"></canvas>
+                        {{ line_data|json_script:"summ-line-data" }}
                     </div>
-
                 </div>
 
                 <!-- Footer -->
@@ -266,14 +270,61 @@
             const progress_ctx = document.getElementById('progressChart').getContext('2d');
             const lineData = JSON.parse(document.getElementById('line-data').textContent);
 
-            const weights = lineData.weights || [];
-            const minWeight = Math.min(...weights);
-            const maxWeight = Math.max(...weights);
+            let weights = lineData.weights || [];
+            let minWeight = Math.min(...weights);
+            let maxWeight = Math.max(...weights);
 
             new Chart(progress_ctx, {
                 type: 'line',
                 data: {
                     labels: lineData.labels || [], 
+                    datasets: [{
+                        label: 'Weight',
+                        data: weights,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Weight (kg)'
+                            },
+                            beginAtZero: false,
+                            suggestedMin: minWeight - 2,
+                            suggestedMax: maxWeight + 2
+                        }
+                    }
+                }
+            });
+
+            // Line Graph.
+            const summary_ctx = document.getElementById('summChart').getContext('2d');
+            const summlineData = JSON.parse(document.getElementById('summ-line-data').textContent);
+
+            weights = summlineData.weights || [];
+            minWeight = Math.min(...weights);
+            maxWeight = Math.max(...weights);
+
+            new Chart(summary_ctx, {
+                type: 'line',
+                data: {
+                    labels: summlineData.labels || [], 
                     datasets: [{
                         label: 'Weight',
                         data: weights,

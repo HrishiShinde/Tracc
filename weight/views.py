@@ -126,6 +126,9 @@ def dashboard(request):
     
     # latest summary for the logged-in user
     summary = WeeklySummary.objects.filter(user=request.user).order_by('-week_start').first()
+    sum_line_data = {}
+    if summary:
+        sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
 
     context = {
         'profile': profile,
@@ -136,6 +139,7 @@ def dashboard(request):
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
         'line_data': line_data,
         'summary': summary,
+        'sum_line_data': sum_line_data
     }
     return render(request, 'pages/dashboard.html', context)
 

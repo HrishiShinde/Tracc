@@ -275,9 +275,16 @@ class Insights:
 
         return progress, progress_offset
 
-    def get_line_data(self, recent_len=None):
+    def get_line_data(self, recent_len=None, date_range=None):
         line_data = {}
-        logs = self.logs[:recent_len] if recent_len else self.logs
+        if recent_len:
+            logs = self.logs[:recent_len]
+        elif date_range:
+            start_date, end_date = date_range
+            logs = self.logs.filter(date__range=(start_date, end_date))
+        else: 
+            self.logs
+
         if self.logs:
             line_data = {
                 "labels": [log.date.strftime('%d-%m-%Y') for log in logs],
