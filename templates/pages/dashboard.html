@@ -156,69 +156,80 @@
 
                 <!-- Header -->
                 <div class="modal-header border-0 pb-0">
-                    <h4 class="modal-title fw-bold">Your Week in Review</h4>
-                    <!-- Week Dates -->
-                    <p class="text-muted small mb-4">
-                        {{ summary.week_start|date:"j M" }} - {{ summary.week_end|date:"j M" }}
-                    </p>
+                    <div class="modal-title">
+                        <h4 class="fw-bold">Your Week in Review</h4>
+                        <p class="text-muted my-0">
+                            {{ summary.week_start|date:"j M" }} - {{ summary.week_end|date:"j M" }}
+                        </p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <!-- Body -->
                 <div class="modal-body">
-
-                    <!-- page one: Graph, avg weight text. 
-                    page two: Highlights -->
-
-                    <!-- Key Stats Row -->
-                    <div class="mb-4">
+                    <div id="page-1" class="d-block">
+                        <div class="summ-graph">
+                            <canvas id="summChart" height="350" width="500"></canvas>
+                            {{ sum_line_data|json_script:"summ-line-data" }}
+                        </div>
+                        
                         <p class="mb-1">
                             <strong>Average Weight:</strong> {{ summary.avg_weight }} kg  
-                            <span class="{% if summary.change_from_last_week > 0 %}text-danger{% elif summary.change_from_last_week < 0 %}text-success{% else %}text-muted{% endif %}">
+                            <span class="{% if summary.change_from_last_week > 0 %}text-danger{% else %}text-success{% endif %}">
                                 ({{ summary.change_from_last_week }} kg from last week)
                             </span>
                         </p>
                         <p class="text-muted">
                             Your weight averaged at <strong>{{ summary.avg_weight }} kg</strong> last week,  
                             which was <strong>{{ summary.change_from_last_week }} kg</strong> 
-                            {% if summary.change_from_last_week > 0 %} more {% elif summary.change_from_last_week < 0 %} less {% else %} same as {% endif %}
-                            than the previous week.
-                        </p>
-
-                        <p class="mb-1">
-                            <strong>BMI Status:</strong> 
-                            <span class="badge rounded-pill px-3 py-2 
-                                {% if summary.bmi_status == 'Normal' %} bg-success-subtle text-success 
-                                {% elif summary.bmi_status == 'Overweight' %} bg-warning-subtle text-warning 
-                                {% else %} bg-danger-subtle text-danger {% endif %}">
-                                {{ summary.bmi_status }}
-                            </span>
+                            {% if summary.change_from_last_week > 0 %} more than the {% elif summary.change_from_last_week < 0 %} less than the {% else %} same as {% endif %}
+                            previous week.
                         </p>
                     </div>
-
-                    <!-- Highlights -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold">Highlights</h6>
-                        <ul class="list-unstyled mb-0">
-                            {% for key, value in summary.highlights.items %}
-                                <li class="mb-1">- {{ value }}</li>
-                            {% empty %}
-                                <li>No highlights available</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <!-- Graph -->
-                    <div class="mb-3">
-                        <h6 class="fw-bold mb-2">Weight Trend</h6>
-                        <canvas id="summChart"></canvas>
-                        {{ line_data|json_script:"summ-line-data" }}
+                    <div id="page-2" class="d-none">
+                        <div class="mb-4">
+                            <h4 class="fw-bold">Highlights</h4>
+                            <div class="row mt-4">
+                                {% for key, value in summary.highlights.items %}
+                                    <div class="col-6">
+                                        <div class="card mb-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title hlts-title text-center">
+                                                    {% if key == 'logs' %}
+                                                    <!-- logged in -->
+                                                    <i class="bi bi-check-square" style="color: #008000;"></i>
+                                                    {% elif key == 'streak' %}
+                                                    <!-- streaks -->
+                                                    <i class="bi bi-fire" style="color: #aa4203;"></i>
+                                                    {% elif key == 'gain' %}
+                                                    <!-- weight gain -->
+                                                    <i class="bi bi-caret-up-fill" style="color: #FF0000;"></i>
+                                                    {% elif key == 'loss' %}
+                                                    <!-- weight loss -->
+                                                    <i class="bi bi-caret-down-fill" style="color: #008000;"></i>
+                                                    {% endif %}
+                                                </h5>
+                                                <p class="card-text text-center">{{ value }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <li>No highlights available</li>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Footer -->
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-primary rounded-pill px-4">
+                <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                    <button id="summ-btn-prev" type="button" class="btn btn-primary rounded-pill px-4 d-none float-left" onclick="changePage(-1)">
+                        Previous
+                    </button>
+                    <button id="summ-btn-next" type="button" class="btn btn-primary rounded-pill px-4 d-block" onclick="changePage(1)">
+                        Next
+                    </button>
+                    <button id="summ-btn-gta" type="button" class="btn btn-primary rounded-pill px-4 d-none" onclick="changePage(1)">
                         Go to Analytics
                     </button>
                 </div>
@@ -338,8 +349,7 @@
                     scales: {
                         x: {
                             title: {
-                                display: true,
-                                text: 'Date'
+                                display: false,
                             },
                             ticks: {
                                 autoSkip: true,
@@ -349,8 +359,7 @@
                         },
                         y: {
                             title: {
-                                display: true,
-                                text: 'Weight (kg)'
+                                display: false,
                             },
                             beginAtZero: false,
                             suggestedMin: minWeight - 2,
@@ -360,5 +369,42 @@
                 }
             });
         });
+
+        // Weekly Summary.
+        let currPage = 1;
+        let prevBtn = document.getElementById("summ-btn-prev");
+        let nextBtn = document.getElementById("summ-btn-next");
+        let gtaBtn = document.getElementById("summ-btn-gta");
+        let page1Div = document.getElementById("page-1");
+        let page2Div = document.getElementById("page-2");
+        function changePage(incr) {
+            currPage += incr;
+            console.log(currPage)
+            if (currPage === 1) {
+                prevBtn.classList.remove("d-block");
+                prevBtn.classList.add("d-none");
+                gtaBtn.classList.remove("d-block");
+                gtaBtn.classList.add("d-none");
+                nextBtn.classList.remove("d-none");
+                nextBtn.classList.add("d-block");
+
+                page1Div.classList.remove("d-none");
+                page1Div.classList.add("d-block");
+                page2Div.classList.remove("d-block");
+                page2Div.classList.add("d-none");
+            } else if (currPage === 2) {
+                prevBtn.classList.add("d-block");
+                prevBtn.classList.remove("d-none");
+                gtaBtn.classList.add("d-block");
+                gtaBtn.classList.remove("d-none");
+                nextBtn.classList.add("d-none");
+                nextBtn.classList.remove("d-block");
+                
+                page1Div.classList.add("d-none");
+                page1Div.classList.remove("d-block");
+                page2Div.classList.add("d-block");
+                page2Div.classList.remove("d-none");
+            }
+        }
     </script>
 {% endblock %}

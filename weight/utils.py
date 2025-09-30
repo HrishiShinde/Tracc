@@ -278,14 +278,18 @@ class Insights:
     def get_line_data(self, recent_len=None, date_range=None):
         line_data = {}
         if recent_len:
-            logs = self.logs[:recent_len]
+            list_length = len(self.logs)
+            start_index = list_length - recent_len
+            start_index = max(0, start_index) 
+
+            logs = self.logs[start_index:]
         elif date_range:
             start_date, end_date = date_range
             logs = self.logs.filter(date__range=(start_date, end_date))
         else: 
-            self.logs
+            logs = self.logs
 
-        if self.logs:
+        if logs:
             line_data = {
                 "labels": [log.date.strftime('%d-%m-%Y') for log in logs],
                 "weights": [log.weight for log in logs]

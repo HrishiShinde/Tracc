@@ -301,4 +301,23 @@ p {
 
 .modal-content {
     border-radius: 20px;
+    height: 700px !important;
+    width: 500px !important;
+}
+
+.my-0 {
+    margin-top: 0% !important;
+    margin-bottom: 0% !important;
+}
+
+#summ-btn-next {
+    margin-left: auto;
+}
+
+.hlts-title {
+    font-size: 5rem !important;
+}
+
+.summ-graph {
+    height: 350px !important;
 }
