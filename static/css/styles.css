@@ -301,8 +301,8 @@ p {
 
 .modal-content {
     border-radius: 20px;
-    height: 700px !important;
-    width: 500px !important;
+    /* height: 700px !important;
+    width: 500px !important; */
 }
 
 .my-0 {
