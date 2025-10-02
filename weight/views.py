@@ -125,7 +125,7 @@ def dashboard(request):
     line_data = insights.get_line_data(recent_len)
     
     # latest summary for the logged-in user
-    summary = WeeklySummary.objects.filter(user=request.user).order_by('-week_start').first()
+    summary = WeeklySummary.objects.filter(user=request.user, has_checked=False).order_by('-week_start').first()
     sum_line_data = {}
     if summary:
         sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
@@ -143,6 +143,17 @@ def dashboard(request):
     }
     return render(request, 'pages/dashboard.html', context)
 
+
+def mark_summary_checked(request, pk):
+    if request.method == "POST":
+        try:
+            summary = WeeklySummary.objects.get(pk=pk)
+            summary.has_checked = True
+            summary.save()
+            return JsonResponse({"status": "success"})
+        except WeeklySummary.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Not found"}, status=404)
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 # ---------- Logs ----------
 @login_required
@@ -330,6 +341,12 @@ def analytics(request):
 
     calendar_events = checkins + streak_events
 
+    # latest summary for the logged-in user
+    summary = WeeklySummary.objects.filter(user=request.user).order_by('-week_start').first()
+    sum_line_data = {}
+    if summary:
+        sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
+
     context = {
         "profile": profile,
         "line_data": line_data,
@@ -340,6 +357,8 @@ def analytics(request):
         "milestones": milestones,
         "fastest_drop": fastest_drop,
         "calendar_events": calendar_events,
+        'summary': summary,
+        'sum_line_data': sum_line_data
     }
     return render(request, "pages/analytics.html", context)
 

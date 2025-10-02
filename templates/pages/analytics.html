@@ -17,6 +17,14 @@
 
     <!-- Side Scroll Mini Cards -->
     <div class="d-flex flex-row flex-nowrap overflow-auto mb-3 analytics-scroll">
+        <div class="card card-analytic summary-card text-center p-2 flex-shrink-0" style="width: 140px;" 
+            data-bs-toggle="modal" data-bs-target="#summaryModal"
+        >
+            <h6 class="fw-bold">Weekly Summary</h6>
+            <p class="mb-0">
+                View your progress!
+            </p>
+        </div>
         <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;" 
             data-bs-toggle="modal" data-bs-target="#calendarModal"
         >
@@ -168,6 +176,11 @@
                 },
                 scales: {
                     x: {
+                        ticks: {
+                            display: false   // hides month labels on X-axis
+                        },
+                    },
+                    y: {
                         ticks: {
                             display: false   // hides month labels on X-axis
                         },
