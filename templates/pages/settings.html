@@ -11,7 +11,7 @@
             </div>
 
             <!-- Profile -->
-            <div class="mb-5">
+            <div class="mb-4">
                 <h5 class="fw-semibold mb-3">Profile</h5>
                 <a href="{% url 'update_profile' %}" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-pencil"></i> Edit Profile
@@ -21,7 +21,7 @@
             <hr>
 
             <!-- Theme Section -->
-            <div class="mb-5">
+            <div class="mb-4">
                 <h5 class="fw-semibold mb-3">Appearance</h5>
                 <div class="row g-3 align-items-center">
 
@@ -76,7 +76,7 @@
             <hr>
 
             <!-- Import Logs -->
-            <div class="mb-5">
+            <div class="mb-4">
                 <h5 class="fw-semibold mb-3">Import your old data</h5>
                 <form method="POST" enctype="multipart/form-data" action="{% url 'import_logs' %}">
                     {% csrf_token %}
@@ -87,19 +87,101 @@
                     <button type="submit" class="btn btn-outline-success btn-sm">
                         <i class="bi bi-upload"></i> Import Logs
                     </button>
+                    <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-download"></i> Export Logs
+                    </a>
                 </form>
+            </div>
+            <!-- Export Logs -->
+            <div class="mb-4">
+                <h5 class="fw-semibold mb-3">Export your data</h5>
             </div>
 
             <hr>
 
             <!-- Account Section -->
-            <div class="mb-2">
+            <div class="mb-4">
                 <h5 class="fw-semibold mb-3">Account</h5>
-                <button class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // root declared in base.html.
+    const settings_root = document.documentElement;
+    const toggleBtn = document.getElementById("theme-toggle"); // navbar one
+    const themeSelect = document.getElementById("themeSelect");
+    const radioLight = document.getElementById("btnradio1");
+    const radioDark = document.getElementById("btnradio2");
+
+    // Load saved theme family + mode
+    let localFamily = localStorage.getItem("themeFamily") || "classic";
+    let localMode = localStorage.getItem("themeMode") || "light";
+
+    setTheme(localFamily, localMode);
+    themeSelect.value = localFamily;
+
+    // Handle theme select change
+    themeSelect.addEventListener("change", (e) => {
+        localFamily = e.target.value;
+        localStorage.setItem("themeFamily", localFamily);
+        setTheme(localFamily, localMode);
+    });
+
+    // Handle navbar toggle (icon button)
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+            localMode = localMode === "light" ? "dark" : "light";
+            localStorage.setItem("themeMode", localMode);
+            setTheme(localFamily, localMode);
+            updateRadio(localMode);
+        });
+    }
+
+    // Handle settings page radios
+    radioLight.addEventListener("change", () => {
+        if (radioLight.checked) {
+            localMode = "light";
+            localStorage.setItem("themeMode", localMode);
+            setTheme(localFamily, localMode);
+        }
+    });
+
+    radioDark.addEventListener("change", () => {
+        if (radioDark.checked) {
+            localMode = "dark";
+            localStorage.setItem("themeMode", localMode);
+            setTheme(localFamily, localMode);
+        }
+    });
+
+    function setTheme(family, mode) {
+        settings_root.setAttribute("data-theme-family", family);
+        settings_root.setAttribute("data-bs-theme", mode);
+
+        // update navbar toggle icon
+        if (toggleBtn) {
+            toggleBtn.innerHTML = mode === "light" 
+                ? '<i class="bi bi-moon"></i>' 
+                : '<i class="bi bi-sun"></i>';
+        }
+
+        // update settings page radios
+        updateRadio(mode);
+    }
+
+    function updateRadio(mode) {
+        if (mode === "light") {
+            radioLight.checked = true;
+            radioDark.checked = false;
+        } else {
+            radioLight.checked = false;
+            radioDark.checked = true;
+        }
+    }
+</script>
 {% endblock %}

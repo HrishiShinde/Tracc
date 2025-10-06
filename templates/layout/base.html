@@ -27,6 +27,7 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
@@ -35,15 +36,12 @@
                 <span class="logo">TRACC</span>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse d-none d-lg-block" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if request.user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'weightlog_list' %}">Logs</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">Analytics</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'settings' %}">Settings</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
                     {% else %}
@@ -76,20 +74,55 @@
     </div>
 
     <!-- Floating Add Button -->
-    {% if show_qab %}
+    <!-- {% if show_qab %}
     <button 
-        class="btn btn-primary rounded-circle shadow-lg"
-        style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px;"
-        data-bs-toggle="modal" data-bs-target="#addEditModal"
+        class="btn shadow-lg add-btn"
+        data-bs-toggle="modal" 
+        data-bs-target="#addEditModal"
         onclick="openAddModal()"
-    >    
+    >
         <i class="bi bi-plus-lg"></i>
     </button>
-    {% endif  %}
+    {% endif  %} -->
+
+    <!-- Bottom Navbar -->
+     
+    {% if request.user.is_authenticated %}
+    <nav class="bottom-navbar d-lg-none">
+        <a href="{% url 'dashboard' %}" class="nav-item text-center">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'weightlog_list' %}" class="nav-item text-center">
+            <i class="bi bi-journal-text"></i>
+            <span>Logs</span>
+        </a>
+
+        <!-- Center Add Button -->
+        <button 
+            class="nav-add-btn"
+            data-bs-toggle="modal" 
+            data-bs-target="#addEditModal"
+            onclick="openAddModal()"
+        >
+            <i class="bi bi-plus-lg"></i>
+        </button>
+
+        <a href="{% url 'analytics' %}" class="nav-item text-center">
+            <i class="bi bi-graph-up"></i>
+            <span>Analytics</span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item text-center">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+    {% endif %}
+
         
     <!-- Add/Edit Modal -->
     <div class="modal fade bg-blur" id="addEditModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog adit-modal">
             <form method="POST" id="addEditForm" action="{% url 'add_weight_log' %}">
                 {% csrf_token %}
                 <div class="modal-content">
@@ -116,15 +149,100 @@
         </div>
     </div>
 
+
+    <!-- Weekly Summary Modal -->
+    <div class="modal fade bg-blur" id="summaryModal" data-bs-backdrop="static" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 shadow-lg border-0 summ-modal">
+
+                <!-- Header -->
+                <div class="modal-header border-0 pb-0">
+                    <div class="modal-title">
+                        <h4 class="fw-bold">Your Week in Review</h4>
+                        <p class="text-muted my-0">
+                            {{ summary.week_start|date:"j M" }} - {{ summary.week_end|date:"j M" }}
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="changePage(0)"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <div id="page-1" class="d-block">
+                        <div class="summ-graph">
+                            <canvas id="summChart" height="600" width="500"></canvas>
+                            {{ sum_line_data|json_script:"summ-line-data" }}
+                        </div>
+                        
+                        <p class="mb-1">
+                            <strong>Average Weight:</strong> {{ summary.avg_weight }} kg  
+                            <span class="{% if summary.change_from_last_week > 0 %}text-danger{% else %}text-success{% endif %}">
+                                ({{ summary.change_from_last_week }} kg from last week)
+                            </span>
+                        </p>
+                        <p class="text-muted">
+                            Your weight averaged at <strong>{{ summary.avg_weight }} kg</strong> last week,  
+                            which was <strong>{{ summary.change_from_last_week }} kg</strong> 
+                            {% if summary.change_from_last_week > 0 %} more than the {% elif summary.change_from_last_week < 0 %} less than the {% else %} same as {% endif %}
+                            previous week.
+                        </p>
+                    </div>
+                    <div id="page-2" class="d-none">
+                        <div class="mb-4">
+                            <div class="row mt-4">
+                                {% for key, value in summary.highlights.items %}
+                                    <div class="col-6">
+                                        <div class="card mb-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title hlts-title text-center">
+                                                    {% if key == 'logs' %}
+                                                    <!-- logged in -->
+                                                    <i class="bi bi-check-square" style="color: #008000;"></i>
+                                                    {% elif key == 'streak' %}
+                                                    <!-- streaks -->
+                                                    <i class="bi bi-fire" style="color: #aa4203;"></i>
+                                                    {% elif key == 'gain' %}
+                                                    <!-- weight gain -->
+                                                    <i class="bi bi-caret-up-fill" style="color: #FF0000;"></i>
+                                                    {% elif key == 'loss' %}
+                                                    <!-- weight loss -->
+                                                    <i class="bi bi-caret-down-fill" style="color: #008000;"></i>
+                                                    {% endif %}
+                                                </h5>
+                                                <p class="card-text text-center">{{ value }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <li>No highlights available</li>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                    <button id="summ-btn-prev" type="button" class="btn btn-primary rounded-pill px-4 d-none float-left" onclick="changePage(-1)">
+                        Previous
+                    </button>
+                    <button id="summ-btn-next" type="button" class="btn btn-primary rounded-pill px-4 d-block" onclick="changePage(1)">
+                        Next
+                    </button>
+                    <a href="{% url 'analytics' %}" id="summ-btn-gta" class="btn btn-primary rounded-pill px-4 d-none">
+                        Go to Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.js"></script> -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
+
     
     <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("{% static 'js/service-worker.js' %}");
-        }
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
         function openAddModal() {
             document.getElementById('modalTitle').innerText = "Add Weight Log";
             document.getElementById('addEditForm').action = "{% url 'add_weight_log' %}";
@@ -132,75 +250,107 @@
             document.getElementById('modalNotes').value = "";
         }
 
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("{% static 'js/service-worker.js' %}");
+        }
+
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
         const root = document.documentElement;
-        const toggleBtn = document.getElementById("theme-toggle"); // navbar one
-        const themeSelect = document.getElementById("themeSelect");
-        const radioLight = document.getElementById("btnradio1");
-        const radioDark = document.getElementById("btnradio2");
 
         // Load saved theme family + mode
         let savedFamily = localStorage.getItem("themeFamily") || "classic";
         let savedMode = localStorage.getItem("themeMode") || "light";
 
-        setTheme(savedFamily, savedMode);
-        themeSelect.value = savedFamily;
+        root.setAttribute("data-theme-family", savedFamily);
+        root.setAttribute("data-bs-theme", savedMode);
 
-        // Handle theme select change
-        themeSelect.addEventListener("change", (e) => {
-            savedFamily = e.target.value;
-            localStorage.setItem("themeFamily", savedFamily);
-            setTheme(savedFamily, savedMode);
+        const navLinks = document.querySelectorAll('.bottom-navbar a');
+        navLinks.forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.add('active');
+            }
         });
+    
+        // Summary Line Graph.
+        const summary_ctx = document.getElementById('summChart').getContext('2d');
+        const summlineData = JSON.parse(document.getElementById('summ-line-data').textContent);
 
-        // Handle navbar toggle (icon button)
-        if (toggleBtn) {
-            toggleBtn.addEventListener("click", () => {
-                savedMode = savedMode === "light" ? "dark" : "light";
-                localStorage.setItem("themeMode", savedMode);
-                setTheme(savedFamily, savedMode);
-                updateRadio(savedMode);
-            });
+        weights = summlineData.weights || [];
+        minWeight = Math.min(...weights);
+        maxWeight = Math.max(...weights);
+
+        new Chart(summary_ctx, {
+            type: 'line',
+            data: {
+                labels: summlineData.labels || [], 
+                datasets: [{
+                    label: 'Weight',
+                    data: weights,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: false,
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: false,
+                        },
+                        beginAtZero: false,
+                        suggestedMin: minWeight - 2,
+                        suggestedMax: maxWeight + 2
+                    }
+                }
+            }
+        });
+        
+        // Weekly Summary.
+        let currPage = 1;
+
+        const prevBtn = document.getElementById("summ-btn-prev");
+        const nextBtn = document.getElementById("summ-btn-next");
+        const gtaBtn  = document.getElementById("summ-btn-gta");
+        const page1Div = document.getElementById("page-1");
+        const page2Div = document.getElementById("page-2");
+
+        function toggleVisibility(el, show) {
+            el.classList.toggle("d-block", show);
+            el.classList.toggle("d-none", !show);
         }
 
-        // Handle settings page radios
-        radioLight.addEventListener("change", () => {
-            if (radioLight.checked) {
-                savedMode = "light";
-                localStorage.setItem("themeMode", savedMode);
-                setTheme(savedFamily, savedMode);
-            }
-        });
+        function changePage(incr = 0) {
+            currPage = incr === 0 ? 1 : currPage + incr;
 
-        radioDark.addEventListener("change", () => {
-            if (radioDark.checked) {
-                savedMode = "dark";
-                localStorage.setItem("themeMode", savedMode);
-                setTheme(savedFamily, savedMode);
-            }
-        });
-
-        function setTheme(family, mode) {
-            root.setAttribute("data-theme-family", family);
-            root.setAttribute("data-bs-theme", mode);
-
-            // update navbar toggle icon
-            if (toggleBtn) {
-                toggleBtn.innerHTML = mode === "light" 
-                    ? '<i class="bi bi-moon"></i>' 
-                    : '<i class="bi bi-sun"></i>';
+            // page 1
+            if (currPage === 1) {
+                toggleVisibility(prevBtn, false);
+                toggleVisibility(gtaBtn, false);
+                toggleVisibility(nextBtn, true);
+                toggleVisibility(page1Div, true);
+                toggleVisibility(page2Div, false);
             }
 
-            // update settings page radios
-            updateRadio(mode);
-        }
-
-        function updateRadio(mode) {
-            if (mode === "light") {
-                radioLight.checked = true;
-                radioDark.checked = false;
-            } else {
-                radioLight.checked = false;
-                radioDark.checked = true;
+            // page 2
+            else if (currPage === 2) {
+                toggleVisibility(prevBtn, true);
+                toggleVisibility(gtaBtn, true);
+                toggleVisibility(nextBtn, false);
+                toggleVisibility(page1Div, false);
+                toggleVisibility(page2Div, true);
             }
         }
     </script>

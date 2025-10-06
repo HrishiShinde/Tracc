@@ -95,6 +95,37 @@
             {% endif %}
         </div>
 
+        <!-- Weekly Summary! -->
+        <!-- {% if summary and not summary.has_checked %}
+        <div 
+            class="summary-card mb-5 d-flex justify-content-between align-items-center"
+            data-bs-toggle="modal" 
+            data-bs-target="#summaryModal"
+        >
+            Your Weekly Summary is ready!
+            <i class="bi bi-box-arrow-in-right"></i>
+        </div>
+        {% endif %} -->
+            
+        <!-- Weekly Summary Trigger Card -->
+        {% if summary and not summary.has_checked %}
+        <div 
+            class="summary-card mb-5"
+            data-bs-toggle="modal" 
+            data-bs-target="#summaryModal"
+            onclick="markChecked()"
+        >
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1 fw-bold">Your Weekly Summary is Ready!</h5>
+                    <small class="text-muted">Tap to view your progress</small>
+                </div>
+                <i class="bi bi-box-arrow-in-right fs-3r"></i>
+            </div>
+            {{ summary.id | json_script:"summary_id" }}
+        </div>
+        {% endif %}
+
         <!-- Recent Logs -->
         <h4 class="mb-3">Recent Weight Logs</h4>
         <ul class="list-group mb-4">
@@ -117,21 +148,30 @@
                 {{ line_data|json_script:"line-data" }}
             </div>
         </div>
-    
-        <div class="col-md-6 mb-4">
-            <div class="card p-3 h-100">
-                <h5 class="card-title">Daily Weight Change</h5>
-                <canvas id="weightChangeChart" style="width:100%; height:200px;"></canvas>
-                {{ daily_changes|json_script:"daily-changes-data" }}
-            </div>
-        </div>
     </div>
-    
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        function markChecked() {
+            const summaryId = document.getElementById("summary_id").innerHTML;
+            fetch(`/weekly-summary-check/${summaryId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success"){
+                    console.log("Marked as checked");
+                    // optional: hide the card immediately
+                    // document.querySelector('.summary-card').style.display = 'none';
+                }
+            });
+        }
         document.addEventListener("DOMContentLoaded", () => {
             // Clock in time localization.
             const el = document.getElementById("clock-in-time");
@@ -172,9 +212,9 @@
             const progress_ctx = document.getElementById('progressChart').getContext('2d');
             const lineData = JSON.parse(document.getElementById('line-data').textContent);
 
-            const weights = lineData.weights || [];
-            const minWeight = Math.min(...weights);
-            const maxWeight = Math.max(...weights);
+            let weights = lineData.weights || [];
+            let minWeight = Math.min(...weights);
+            let maxWeight = Math.max(...weights);
 
             new Chart(progress_ctx, {
                 type: 'line',
@@ -211,46 +251,6 @@
                             suggestedMin: minWeight - 2,
                             suggestedMax: maxWeight + 2
                         }
-                    }
-                }
-            });
-
-            // Weight Change graph.
-            const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
-            const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
-            const labels = dailyChanges.map(entry => entry.date);
-            const data = dailyChanges.map(entry => entry.change);
-
-            new Chart(weight_change_ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Daily Weight Change (kg)',
-                        data: data,
-                        backgroundColor: data.map(change => change < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
-                        borderColor: data.map(change => change < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        },
-                        y: {
-                                title: {
-                                    display: true,
-                                    text: 'Weight (kg)'
-                                },
-                                beginAtZero: false,
-                                suggestedMin: -2,
-                                suggestedMax: 2
-                            }
                     }
                 }
             });

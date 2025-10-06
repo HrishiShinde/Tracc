@@ -15,7 +15,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
-    path("import-logs/", views.import_logs, name="import_logs"),
+    path('weekly-summary-check/<int:pk>/', views.mark_summary_checked, name='mark_summary_checked'),
 
     # Logs
     path('logs/', views.weightlog_list, name='weightlog_list'),
@@ -26,11 +26,19 @@ urlpatterns = [
 
     # Settings
     path('settings/', views.settings, name='settings'),
+    path("import-logs/", views.import_logs, name="import_logs"),
+    path("export-logs/", views.export_logs, name="export_logs"),
+
+    # Analytics
+    path('analytics/', views.analytics, name='analytics'),
 
     # Catch-all empty path redirect
     path('', lambda request: redirect('dashboard'), name='home_redirect'),
 
     # Health.
     path("health/", views.health_view, name="health_page"),
-    path("healthz/", views.health_json, name="health_json"),
+    path("healthz/", views.health_json, name="health_json"),\
+    
+    # Weekly summary.
+    path("run-weekly-summary/", views.run_weekly_summary, name="run_weekly_summary"),
 ]

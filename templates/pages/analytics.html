@@ -1,0 +1,355 @@
+{% extends 'layout/base.html' %}
+{% block title %}Analytics | Tracc{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <!-- Page Title -->
+        <h2 class="mb-5 text-center">Analytics</h2>
+
+        <!-- Main Line Graph -->
+        <div class="card mb-4 graph-card">
+            <h5 class="card-title">Progress Over Time</h5>
+            <canvas id="progressChart"></canvas>
+            {{ line_data|json_script:"line-data" }}
+        </div>
+    </div>
+
+    <!-- Side Scroll Mini Cards -->
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="d-flex flex-row flex-nowrap overflow-auto mb-3 analytics-scroll">
+            <div class="card card-analytic summary-card text-center p-2 flex-shrink-0" style="width: 140px;" 
+                data-bs-toggle="modal" data-bs-target="#summaryModal"
+            >
+                <h6 class="fw-bold">Weekly Summary</h6>
+                <p class="mb-0">
+                    View your progress!
+                </p>
+            </div>
+            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;" 
+                data-bs-toggle="modal" data-bs-target="#calendarModal"
+            >
+                <h6 class="fw-bold">Streaks</h6>
+                <p class="fs-3r mb-0">
+                    <i class="bi bi-fire streaks-icon front-icon"></i>
+                    <span class="inner-fire"></span>
+                    {{streaks}}
+                </p>
+            </div>
+            
+            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+                <h6 class="fw-bold text-gold">Milestone</h6>
+                <p class="mb-0 d-flex justify-content-between align-items-center">
+                    <i class="bi bi-award fs-3r front-icon"></i>
+                    <span class="inner-medal"></span>
+                    {{milestones.title}}
+                </p>
+            </div>
+            
+            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+                <h6 class="fw-bold">Fastest Drop</h6>
+                <p class="fs-2 mb-0">{{fastest_drop.drop}} <small class="text-muted">kg/week</small></p>
+            </div>
+            <!-- <i class="bi bi-graph-down"></i>  -->
+            <!-- add more mini cards here -->
+        </div>
+    </div>
+
+    <!-- Daily Weight Change Bar Graph -->
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="card mb-4 graph-card">
+            <h5 class="card-title">Daily Change</h5>
+            <canvas id="weightChangeChart"></canvas>
+            {{ daily_changes|json_script:"daily-changes-data" }}
+        </div>
+    </div>
+
+    <!-- Weight Zones -->
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="card mb-4 graph-card">
+            <h5 class="card-title">Weight Zones</h5>
+            <canvas id="zonesGraph"></canvas>
+            {{ weight_zones|json_script:"weight-zones-data" }}
+            {{ profile.bmi|json_script:"current-bmi" }}
+        </div>
+    </div>
+
+    <!-- Monthly Average -->
+    <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="card mb-4 graph-card">
+            <h5 class="card-title">Monthly Average</h5>
+            <canvas id="monthlyGraph"></canvas>
+            {{ monthly_avg|json_script:"monthly-avg-data" }}
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Modal -->
+<div class="modal fade bg-blur" id="calendarModal" tabindex="-1" >
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Streaks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="calendar"></div>
+                {{ calendar_events|json_script:"calendar-events" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const calendarEl = document.getElementById('calendar');
+        const events = JSON.parse(document.getElementById("calendar-events").textContent);
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: "auto",
+            fixedWeekCount: false,   // disables extra weeks
+            // showNonCurrentDates: false, // hides prev/next month leftover days
+            headerToolbar: {
+                left: 'prev',
+                center: 'title',
+                right: 'next'
+            },
+            dateClick: function(info) {
+                alert('Date clicked: ' + info.dateStr);
+            },
+            events: events.map(ev => ({
+                start: ev.date,
+                allDay: true,
+                extendedProps: { type: ev.type }
+            })),
+            eventContent: function(arg) {
+                let iconHtml = '';
+                if (arg.event.extendedProps.type === "streak") {
+                    iconHtml = `<i class="bi bi-fire streaks-icon front-icon"></i><span class="mini-inner-fire"></span>`;
+                } else if (arg.event.extendedProps.type === "checkin") {
+                    iconHtml = `<i class="bi bi-check2 check-in-icon"></i>`;
+                }
+                return { 
+                    html: `<div class="fc-event-icon">${iconHtml}</div>` 
+                };
+            }
+        });
+
+        // Render calendar only when modal is shown
+        const calendarModal = document.getElementById('calendarModal');
+        calendarModal.addEventListener('shown.bs.modal', () => {
+            calendar.render();
+        });
+
+        // Line Graph (Progress)
+        const progress_ctx = document.getElementById('progressChart').getContext('2d');
+        const lineData = JSON.parse(document.getElementById('line-data').textContent);
+
+        new Chart(progress_ctx, {
+            type: 'line',
+            data: {
+                labels: lineData.labels,
+                datasets: [{
+                    label: 'Weight',
+                    data: lineData.weights,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return `${ctx.parsed.y} Kgs`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false   // hides month labels on X-axis
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            display: false   // hides month labels on X-axis
+                        },
+                    },
+                }
+            }
+        });
+
+        // Bar Graph (Daily Changes)
+        const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
+        const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
+
+        new Chart(weight_change_ctx, {
+            type: 'bar',
+            data: {
+                labels: dailyChanges.map(entry => entry.date),
+                datasets: [{
+                    label: 'Daily Change (kg)',
+                    data: dailyChanges.map(entry => entry.change),
+                    backgroundColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                    borderColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        // Weight Zones - Donut with BMI in center
+        const zone_ctx = document.getElementById('zonesGraph').getContext('2d');
+        const weight_zones = JSON.parse(document.getElementById('weight-zones-data').textContent);
+        const current_bmi = JSON.parse(document.getElementById('current-bmi').textContent);
+
+        new Chart(zone_ctx, {
+            type: 'doughnut',  // donut chart
+            data: {
+                labels: weight_zones.map(entry => entry.label),
+                datasets: [{
+                    label: 'BMI Zones',
+                    data: weight_zones.map(entry => entry.count),
+                    backgroundColor: weight_zones.map(entry => getCssVar(entry.color)),
+                    hoverOffset: 6,
+                    borderWidth: 2,
+                    borderColor: "#fff"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%', // makes it a donut
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 12,
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return `${ctx.label}: ${ctx.parsed} days`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'bmiCenterText',
+                beforeDraw: (chart) => {
+                    const { ctx, chartArea: {left, right, top, bottom} } = chart;
+                    ctx.save();
+
+                    const centerX = (left + right) / 2;
+                    const centerY = (top + bottom) / 2;
+
+                    ctx.font = `${(chart.height / 8).toFixed(0)}px ${getCssVar("--bs-font-sans-serif")}, system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = getCssVar('--text-color');
+
+                    const text = current_bmi ? current_bmi.toFixed(1) : "N/A";
+                    ctx.fillText(text, centerX, centerY);
+                    ctx.restore();
+                }
+            }]
+        });
+        
+        // Monthly Avg,
+        const monthly_ctx = document.getElementById('monthlyGraph').getContext('2d');
+        const monthly_avg = JSON.parse(document.getElementById('monthly-avg-data').textContent);
+
+        new Chart(monthly_ctx, {
+            type: 'bar',
+            data: {
+                labels: monthly_avg.map(entry => entry.month),
+                datasets: [
+                    {
+                        label: 'Avg Weight (kg)',
+                        data: monthly_avg.map(entry => entry.avg_weight),
+                        borderColor: getCssVar('--text-color'),
+                        backgroundColor: getCssVar('--text-color'),
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Avg BMI',
+                        data: monthly_avg.map(entry => entry.avg_bmi),
+                        borderColor: getCssVar('--accent-color'),
+                        backgroundColor: getCssVar('--accent-color'),
+                        borderDash: [5, 5], // dashed line to differentiate
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.dataset.label.includes("Weight")) {
+                                    return ctx.parsed.y + " kg";
+                                }
+                                if (ctx.dataset.label.includes("BMI")) {
+                                    return ctx.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Weight (kg)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'BMI'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

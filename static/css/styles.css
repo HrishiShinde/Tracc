@@ -1,5 +1,5 @@
 .logo {
-    font-weight: 100; 
+    font-weight: 100;
     font-size: 1.5rem;
 }
 
@@ -14,6 +14,7 @@
 p {
     margin-top: 25px !important;
 }
+
 .card-body-margin {
     margin: 15px 0px 0px 10px;
 }
@@ -34,10 +35,289 @@ p {
     margin-bottom: -2px !important;
 }
 
-.modal-dialog {
-    top: 30%;
+.adit-modal {
+    top: 25%;
 }
 
 .bg-blur {
-    backdrop-filter: blur(1px);
+    backdrop-filter: blur(5px);
+}
+
+
+/* Bottom Navbar */
+.bottom-navbar {
+    position: fixed;
+    bottom: 12px;
+    left: 10px;
+    right: 10px;
+    height: 70px;
+    background-color: var(--bs-navbar-bg, rgba(255, 255, 255, 0.85)) !important;
+    border-radius: 18px;
+    z-index: 999;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    padding: 0 10px;
+    width: auto !important;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+}
+
+/* Normal items */
+.bottom-navbar a {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 6px 4px;
+}
+
+/* Icons size */
+.nav-item i {
+    font-size: 25px;
+    line-height: 1;
+}
+
+/* Nav-item text size */
+.nav-item span {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Active state */
+.bottom-navbar a.active {
+    color: var(--bs-primary) !important;
+    position: relative;
+}
+
+/* Active state top line + downward glow */
+.bottom-navbar a.active::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--bs-primary);
+    box-shadow: 
+        0 15px 30px 2px var(--bs-primary),   /* strong downward glow */
+        0 6px 18px 4px rgba(0,0,0,0.15);   /* subtle depth for realism */
+}
+
+/* Add button (center) */
+.nav-add-btn {
+    position: relative;
+    top: -25px; /* pops out */
+    margin: 0 auto 0 auto;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--bs-primary);
+    color: #fff;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.nav-add-btn:hover {
+    filter: brightness(90%);
+    transform: scale(1.08);
+}
+
+@media (max-width: 992px) {
+    body {
+        padding-bottom: 50px !important;
+        /* navbar height + some extra spacing */
+    }
+}
+
+/* Legend grid styling */
+#bmi-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px 16px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+#bmi-legend li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+}
+
+#bmi-legend li span {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+/* Graph cards */
+.graph-card {
+    height: 400px !important;
+    width: 100%;
+    padding: 1rem 1rem 2.5rem 1rem !important;
+}
+
+.card-analytic {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: var(--bs-card-bg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.card-analytic::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 4px 4px 0 0;
+}
+
+.card-analytic:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.analytics-scroll {
+    padding-bottom: 6px;
+    gap: 10px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.analytics-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+#calendar {
+    max-width: 100%;
+}
+
+.fc-event-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: none !important; /* remove default bg */
+    color: inherit; /* you can also set green/orange per icon */
+    pointer-events: none; /* so clicks go to the cell, not icon */
+}
+
+.card-analytic p {
+    position: relative; /* Create a positioning context */
+}
+
+.bi-award {
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
+    background-clip: text;              /* standard */
+    -webkit-background-clip: text;      /* for Chrome/Safari */
+    -webkit-text-fill-color: transparent;
+    color: transparent;                 /* fallback */
+}
+
+.inner-medal {
+    background: linear-gradient(45deg, #FF69B4, #8A2BE2);
+    height: 31px;
+    width: 30px;
+    border-radius: 17px;
+    position: absolute;
+    left: 8%;
+    top: 12%;
+    z-index: 1;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+}
+
+.inner-fire {
+    background-color: orange;
+    height: 31px;
+    width: 30px;
+    border-radius: 17px;
+    position: absolute;
+    left: 20%;
+    top: 28%;
+    z-index: 1;
+}
+
+.mini-inner-fire {
+    background-color: orange;
+    height: 15px;
+    width: 14px;
+    border-radius: 17px;
+    position: absolute;
+    left: 35%;
+    top: 28%;
+    z-index: 1;
+}
+
+.front-icon {
+    position: relative;
+    z-index: 2;
+}
+
+.list-group-item {
+    cursor: pointer;
+}
+
+/* .summary-card {
+    border: 1px solid grey;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 22px;
+    background: linear-gradient(135deg, var(--bs-primary) -40%, transparent 40%);
+    background: linear-gradient(135deg, var(--bs-primary) -40%, transparent 70%);
+} */
+.summary-card {
+    border: none;
+    border-radius: 10px;
+    padding: 15px 20px;
+    font-size: 20px;
+    font-weight: 500;
+    background: linear-gradient(135deg, var(--bs-primary) -40%, transparent 70%);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-content {
+    border-radius: 20px;
+    /* height: 700px !important;
+    width: 500px !important; */
+}
+
+.my-0 {
+    margin-top: 0% !important;
+    margin-bottom: 0% !important;
+}
+
+#summ-btn-next {
+    margin-left: auto;
+}
+
+.hlts-title {
+    font-size: 5rem !important;
+}
+
+.summ-graph {
+    height: 400px !important;
 }

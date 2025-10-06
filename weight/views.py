@@ -3,14 +3,18 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
+from django.core.management import call_command
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
-from .models import Profile, WeightLog
+from .models import Profile, WeightLog, UserMilestone, WeeklySummary
+from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ---------- Register ----------
 def register_view(request):
@@ -101,7 +105,6 @@ def get_more_data(request):
 def dashboard(request):
     profile = request.user.profile
     today = timezone.localdate()
-    CIRCLE_CIRCUMFERENCE = 2 * 3.1416 * 54  # ≈ 339.292
     
     # Today's log for Clock In.
     today_log = profile.weightlog_set.filter(date=today).first()
@@ -109,70 +112,26 @@ def dashboard(request):
     # Fetch logs.
     logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('date')
 
+    # Recent and Latest.
+    recent_len = 5
+    recent_logs = logs.order_by('-date')[:recent_len]
+    latest_weight = logs.last().weight
+
+    # Call Insights class.
+    insights = Insights(logs)
+
     # BMI and Progress.
-    bmi = None
-    progress = None
-    progress_offset = CIRCLE_CIRCUMFERENCE  # default if no progress
-    recent_logs = logs.order_by('-date')[:5]
-    latest_weight_log = logs.order_by('-date').first()
-    latest_weight = latest_weight_log.weight if latest_weight_log else 0
-    
-    if profile.target_weight and latest_weight_log:
-        start_weight = logs.first().weight if logs else latest_weight
-        weight_diff = start_weight - profile.target_weight
-        if weight_diff != 0:
-            progress = round(((start_weight - latest_weight) / weight_diff) * 100)
-            progress = max(0, min(progress, 100))  # Clamp between 0–100
-            progress_offset = CIRCLE_CIRCUMFERENCE - (progress / 100) * CIRCLE_CIRCUMFERENCE
-
-    if profile.height_cm and latest_weight:
-        height_m = profile.height_cm / 100
-        bmi = round(latest_weight / (height_m ** 2), 2)
-
-    # BMI Styles and details.
-    if bmi < 18.5:
-        bmi_class = "Underweight"
-        style = "bmi-underweight"
-    elif bmi < 25:
-        bmi_class = "Normal"
-        style = "bmi-normal"
-    elif bmi < 30:
-        bmi_class = "Overweight"
-        style = "bmi-overweight"
-    else:
-        bmi_class = "Obese"
-        style = "bmi-obese"
-
-    bmi_data = {
-        "value": round(bmi, 1),
-        "class": bmi_class,
-        "style": style
-    }
+    progress, progress_offset = insights.get_progress(profile)
+    bmi_data = calculate_bmi(latest_weight, profile.height_cm)
 
     # Graphs processing.
-    line_data = {
-        "labels": list(logs.values_list('date', flat=True)),
-        'weights': list(logs.values_list('weight', flat=True))
-    }
-    line_data['labels'] = [ label.strftime('%d-%m-%Y') for label in line_data['labels']]
-
-    # Build daily changes list
-    daily_changes = []
-    previous_weight = None
-
-    for log in logs:
-        # If weight is none that means latest record is of "clock in".
-        if log.weight is None:
-            break
-
-        date_str = log.date.strftime('%d-%m-%Y')
-        if previous_weight is not None:
-            change = round(log.weight - previous_weight, 1)
-            daily_changes.append({
-                'date': date_str,
-                'change': change
-            })
-        previous_weight = log.weight
+    line_data = insights.get_line_data(recent_len)
+    
+    # latest summary for the logged-in user
+    summary = WeeklySummary.objects.filter(user=request.user, has_checked=False).order_by('-week_start').first()
+    sum_line_data = {}
+    if summary:
+        sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
 
     context = {
         'profile': profile,
@@ -182,10 +141,22 @@ def dashboard(request):
         'progress_offset': progress_offset,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
         'line_data': line_data,
-        'daily_changes': daily_changes
+        'summary': summary,
+        'sum_line_data': sum_line_data
     }
-    return render(request, 'dashboard/dashboard.html', context)
+    return render(request, 'pages/dashboard.html', context)
 
+
+def mark_summary_checked(request, pk):
+    if request.method == "POST":
+        try:
+            summary = WeeklySummary.objects.get(pk=pk)
+            summary.has_checked = True
+            summary.save()
+            return JsonResponse({"status": "success"})
+        except WeeklySummary.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Not found"}, status=404)
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 # ---------- Logs ----------
 @login_required
@@ -204,7 +175,7 @@ def add_or_edit_weight_log(request, pk=None):
     if request.method == 'POST':
         weight = request.POST.get('weight')
         notes = request.POST.get('notes', '')
-        check_in = request.POST.get('check_in') == 'true'  # button sends 'true' if clicked
+        check_in = request.POST.get('check_in') == 'true'
 
         if pk:
             # Editing existing log
@@ -216,16 +187,25 @@ def add_or_edit_weight_log(request, pk=None):
         # Update fields
         if weight:
             log.weight = weight
+            log.bmi = calculate_bmi(weight, profile.height_cm).get("value")
         log.notes = notes
 
+        # Today's clock in.
         if check_in:
             log.check_in = True
             log.check_in_at = timezone.now()
 
+        # Save logs.
         log.save()
+
+        # Update Streaks and check achievements.
+        if log.check_in and log.weight:
+            update_streaks(profile)
+            check_for_achievements(profile)
+    
         if not weight:
             return redirect('dashboard')
-        return redirect('weightlog_list')  # ya dashboard, jahan se call ho raha hai
+        return redirect('weightlog_list')
 
 
 # ---------- Delete Logs ----------
@@ -241,7 +221,7 @@ def delete_weight_log(request, pk):
 # ---------- Settings ----------
 @login_required
 def settings(request):
-    return render(request, 'dashboard/settings.html')
+    return render(request, 'pages/settings.html')
 
 
 # ---------- Import Logs ----------
@@ -296,6 +276,95 @@ def import_logs(request):
     messages.error(request, "No file uploaded.")
     return redirect("settings")
 
+# ---------- Export Logs ----------
+@login_required
+def export_logs(request):
+    profile = request.user.profile
+    logs = profile.weightlog_set.all().order_by("date")
+
+    # Create the HttpResponse with CSV header
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="weight_logs.csv"'
+
+    writer = csv.writer(response)
+    # Write header row (same as import)
+    writer.writerow(["Date", "Weight (kg)", "Notes/Mood"])
+
+    # Write logs
+    for log in logs:
+        writer.writerow([
+            log.date.strftime("%d/%m/%y"),  # same format as import
+            log.weight if log.weight is not None else "",
+            log.notes or ""
+        ])
+
+    return response
+
+# ---------- Analytics ----------
+@login_required
+def analytics(request):
+    profile = request.user.profile
+    logs = profile.weightlog_set.exclude(weight__isnull=True).order_by('date')
+
+    insights = Insights(logs)
+
+    # Graphs processing
+    line_data = insights.get_line_data()
+    daily_changes = insights.get_daily_change()
+    monthly_avg = insights.get_monthly_avg()
+    weight_zones = insights.get_weight_zones()
+
+    # Cards.
+    streaks = profile.streaks
+    fastest_drop = insights.get_fastest_drop()
+    milestones = UserMilestone.objects.filter(profile=profile).last().milestone
+
+    # Calendar events.
+    streak_events = []
+    streak_dates = set()
+    if profile.streaks and profile.streaks > 1 and profile.streaks_from:
+        for i in range(profile.streaks):
+            streak_day = profile.streaks_from + timedelta(days=i)
+            formatted_date = streak_day.strftime("%Y-%m-%d")
+            streak_dates.add(formatted_date)
+            streak_events.append({
+                "type": "streak",
+                "date": formatted_date
+            })
+
+    checkin_logs = logs.filter(check_in=True)
+    checkins = [
+        {
+            "type": "checkin",
+            "date": log.date.strftime("%Y-%m-%d")
+        }
+        for log in checkin_logs
+        if log.date.strftime("%Y-%m-%d") not in streak_dates
+    ]
+
+    calendar_events = checkins + streak_events
+
+    # latest summary for the logged-in user
+    summary = WeeklySummary.objects.filter(user=request.user).order_by('-week_start').first()
+    sum_line_data = {}
+    if summary:
+        sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
+
+    context = {
+        "profile": profile,
+        "line_data": line_data,
+        "daily_changes": daily_changes,
+        "monthly_avg": monthly_avg,
+        "weight_zones": weight_zones,
+        "streaks": streaks,
+        "milestones": milestones,
+        "fastest_drop": fastest_drop,
+        "calendar_events": calendar_events,
+        'summary': summary,
+        'sum_line_data': sum_line_data
+    }
+    return render(request, "pages/analytics.html", context)
+
 
 # ---------- Health ----------
 def health_view(request):
@@ -312,7 +381,7 @@ def health_view(request):
         "db_status": db_status,
         "checked_at": timezone.now(),
     }
-    return render(request, "dashboard/health.html", context)
+    return render(request, "pages/health.html", context)
 
 def health_json(request):
     db_status = False
@@ -328,3 +397,15 @@ def health_json(request):
         "database": db_status,
         "checked_at": timezone.now().isoformat(),
     })
+
+
+# ---------- Weekly summary ----------
+@csrf_exempt
+def run_weekly_summary(request):
+    # simple token-based protection
+    token = request.GET.get("token")
+    if token != settings.CRON_SECRET:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    call_command("generate_weekly_summaries")
+    return JsonResponse({"status": "success"})
