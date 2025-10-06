@@ -15,6 +15,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('weekly-summary-check/<int:pk>/', views.mark_summary_checked, name='mark_summary_checked'),
 
     # Logs
     path('logs/', views.weightlog_list, name='weightlog_list'),
@@ -36,5 +37,8 @@ urlpatterns = [
 
     # Health.
     path("health/", views.health_view, name="health_page"),
-    path("healthz/", views.health_json, name="health_json"),
+    path("healthz/", views.health_json, name="health_json"),\
+    
+    # Weekly summary.
+    path("run-weekly-summary/", views.run_weekly_summary, name="run_weekly_summary"),
 ]

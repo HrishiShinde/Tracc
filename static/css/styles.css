@@ -1,5 +1,5 @@
 .logo {
-    font-weight: 100; 
+    font-weight: 100;
     font-size: 1.5rem;
 }
 
@@ -14,6 +14,7 @@
 p {
     margin-top: 25px !important;
 }
+
 .card-body-margin {
     margin: 15px 0px 0px 10px;
 }
@@ -50,7 +51,7 @@ p {
     left: 10px;
     right: 10px;
     height: 70px;
-    background-color: var(--bs-navbar-bg, rgba(255,255,255,0.85)) !important;
+    background-color: var(--bs-navbar-bg, rgba(255, 255, 255, 0.85)) !important;
     border-radius: 18px;
     z-index: 999;
     display: grid;
@@ -58,7 +59,7 @@ p {
     align-items: center;
     padding: 0 10px;
     width: auto !important;
-    box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
 }
 
@@ -106,6 +107,7 @@ p {
         0 15px 30px 2px var(--bs-primary),   /* strong downward glow */
         0 6px 18px 4px rgba(0,0,0,0.15);   /* subtle depth for realism */
 }
+
 /* Add button (center) */
 .nav-add-btn {
     position: relative;
@@ -121,7 +123,7 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
@@ -132,7 +134,8 @@ p {
 
 @media (max-width: 992px) {
     body {
-        padding-bottom: 50px !important; /* navbar height + some extra spacing */
+        padding-bottom: 50px !important;
+        /* navbar height + some extra spacing */
     }
 }
 
@@ -144,12 +147,14 @@ p {
     margin-top: 1rem;
     font-size: 0.9rem;
 }
+
 #bmi-legend li {
     display: flex;
     align-items: center;
     gap: 6px;
     list-style: none;
 }
+
 #bmi-legend li span {
     display: inline-block;
     width: 14px;
@@ -166,7 +171,7 @@ p {
 
 .card-analytic {
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     background: var(--bs-card-bg);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
@@ -175,7 +180,9 @@ p {
 .card-analytic::before {
     content: "";
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 4px;
     background: var(--primary-color);
     border-radius: 4px 4px 0 0;
@@ -183,7 +190,7 @@ p {
 
 .card-analytic:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .analytics-scroll {
@@ -266,4 +273,51 @@ p {
 
 .list-group-item {
     cursor: pointer;
+}
+
+/* .summary-card {
+    border: 1px solid grey;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 22px;
+    background: linear-gradient(135deg, var(--bs-primary) -40%, transparent 40%);
+    background: linear-gradient(135deg, var(--bs-primary) -40%, transparent 70%);
+} */
+.summary-card {
+    border: none;
+    border-radius: 10px;
+    padding: 15px 20px;
+    font-size: 20px;
+    font-weight: 500;
+    background: linear-gradient(135deg, var(--bs-primary) -40%, transparent 70%);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-content {
+    border-radius: 20px;
+    /* height: 700px !important;
+    width: 500px !important; */
+}
+
+.my-0 {
+    margin-top: 0% !important;
+    margin-bottom: 0% !important;
+}
+
+#summ-btn-next {
+    margin-left: auto;
+}
+
+.hlts-title {
+    font-size: 5rem !important;
+}
+
+.summ-graph {
+    height: 400px !important;
 }

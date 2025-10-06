@@ -72,3 +72,28 @@ class UserMilestone(models.Model):
 
     def __str__(self):
         return f"{self.profile.user.username} - {self.milestone.title}"
+
+
+class WeeklySummary(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="weekly_summaries")
+    week_start = models.DateField()
+    week_end = models.DateField()
+
+    avg_weight = models.FloatField()
+    change_from_last_week = models.FloatField(default=0.0)
+    bmi_status = models.CharField(max_length=20)
+
+    streak = models.IntegerField(default=0)
+    highlights = models.JSONField(default=dict, blank=True)
+
+    has_checked = models.BooleanField(default=False)
+    checked_on = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "week_start", "week_end")
+        ordering = ["-week_start"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.week_start} to {self.week_end}"

@@ -149,6 +149,94 @@
         </div>
     </div>
 
+
+    <!-- Weekly Summary Modal -->
+    <div class="modal fade bg-blur" id="summaryModal" data-bs-backdrop="static" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 shadow-lg border-0 summ-modal">
+
+                <!-- Header -->
+                <div class="modal-header border-0 pb-0">
+                    <div class="modal-title">
+                        <h4 class="fw-bold">Your Week in Review</h4>
+                        <p class="text-muted my-0">
+                            {{ summary.week_start|date:"j M" }} - {{ summary.week_end|date:"j M" }}
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="changePage(0)"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <div id="page-1" class="d-block">
+                        <div class="summ-graph">
+                            <canvas id="summChart" height="600" width="500"></canvas>
+                            {{ sum_line_data|json_script:"summ-line-data" }}
+                        </div>
+                        
+                        <p class="mb-1">
+                            <strong>Average Weight:</strong> {{ summary.avg_weight }} kg  
+                            <span class="{% if summary.change_from_last_week > 0 %}text-danger{% else %}text-success{% endif %}">
+                                ({{ summary.change_from_last_week }} kg from last week)
+                            </span>
+                        </p>
+                        <p class="text-muted">
+                            Your weight averaged at <strong>{{ summary.avg_weight }} kg</strong> last week,  
+                            which was <strong>{{ summary.change_from_last_week }} kg</strong> 
+                            {% if summary.change_from_last_week > 0 %} more than the {% elif summary.change_from_last_week < 0 %} less than the {% else %} same as {% endif %}
+                            previous week.
+                        </p>
+                    </div>
+                    <div id="page-2" class="d-none">
+                        <div class="mb-4">
+                            <div class="row mt-4">
+                                {% for key, value in summary.highlights.items %}
+                                    <div class="col-6">
+                                        <div class="card mb-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title hlts-title text-center">
+                                                    {% if key == 'logs' %}
+                                                    <!-- logged in -->
+                                                    <i class="bi bi-check-square" style="color: #008000;"></i>
+                                                    {% elif key == 'streak' %}
+                                                    <!-- streaks -->
+                                                    <i class="bi bi-fire" style="color: #aa4203;"></i>
+                                                    {% elif key == 'gain' %}
+                                                    <!-- weight gain -->
+                                                    <i class="bi bi-caret-up-fill" style="color: #FF0000;"></i>
+                                                    {% elif key == 'loss' %}
+                                                    <!-- weight loss -->
+                                                    <i class="bi bi-caret-down-fill" style="color: #008000;"></i>
+                                                    {% endif %}
+                                                </h5>
+                                                <p class="card-text text-center">{{ value }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <li>No highlights available</li>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                    <button id="summ-btn-prev" type="button" class="btn btn-primary rounded-pill px-4 d-none float-left" onclick="changePage(-1)">
+                        Previous
+                    </button>
+                    <button id="summ-btn-next" type="button" class="btn btn-primary rounded-pill px-4 d-block" onclick="changePage(1)">
+                        Next
+                    </button>
+                    <a href="{% url 'analytics' %}" id="summ-btn-gta" class="btn btn-primary rounded-pill px-4 d-none">
+                        Go to Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.js"></script> -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
@@ -184,6 +272,87 @@
                 link.classList.add('active');
             }
         });
+    
+        // Summary Line Graph.
+        const summary_ctx = document.getElementById('summChart').getContext('2d');
+        const summlineData = JSON.parse(document.getElementById('summ-line-data').textContent);
+
+        weights = summlineData.weights || [];
+        minWeight = Math.min(...weights);
+        maxWeight = Math.max(...weights);
+
+        new Chart(summary_ctx, {
+            type: 'line',
+            data: {
+                labels: summlineData.labels || [], 
+                datasets: [{
+                    label: 'Weight',
+                    data: weights,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: false,
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: false,
+                        },
+                        beginAtZero: false,
+                        suggestedMin: minWeight - 2,
+                        suggestedMax: maxWeight + 2
+                    }
+                }
+            }
+        });
+        
+        // Weekly Summary.
+        let currPage = 1;
+
+        const prevBtn = document.getElementById("summ-btn-prev");
+        const nextBtn = document.getElementById("summ-btn-next");
+        const gtaBtn  = document.getElementById("summ-btn-gta");
+        const page1Div = document.getElementById("page-1");
+        const page2Div = document.getElementById("page-2");
+
+        function toggleVisibility(el, show) {
+            el.classList.toggle("d-block", show);
+            el.classList.toggle("d-none", !show);
+        }
+
+        function changePage(incr = 0) {
+            currPage = incr === 0 ? 1 : currPage + incr;
+
+            // page 1
+            if (currPage === 1) {
+                toggleVisibility(prevBtn, false);
+                toggleVisibility(gtaBtn, false);
+                toggleVisibility(nextBtn, true);
+                toggleVisibility(page1Div, true);
+                toggleVisibility(page2Div, false);
+            }
+
+            // page 2
+            else if (currPage === 2) {
+                toggleVisibility(prevBtn, true);
+                toggleVisibility(gtaBtn, true);
+                toggleVisibility(nextBtn, false);
+                toggleVisibility(page1Div, false);
+                toggleVisibility(page2Div, true);
+            }
+        }
     </script>
 </body>
 </html>

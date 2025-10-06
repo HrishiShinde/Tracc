@@ -6,8 +6,11 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
+from django.core.management import call_command
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
-from .models import Profile, WeightLog, UserMilestone
+from .models import Profile, WeightLog, UserMilestone, WeeklySummary
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 import csv
 import io
@@ -123,6 +126,12 @@ def dashboard(request):
 
     # Graphs processing.
     line_data = insights.get_line_data(recent_len)
+    
+    # latest summary for the logged-in user
+    summary = WeeklySummary.objects.filter(user=request.user, has_checked=False).order_by('-week_start').first()
+    sum_line_data = {}
+    if summary:
+        sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
 
     context = {
         'profile': profile,
@@ -131,10 +140,23 @@ def dashboard(request):
         'progress': progress,
         'progress_offset': progress_offset,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
-        'line_data': line_data
+        'line_data': line_data,
+        'summary': summary,
+        'sum_line_data': sum_line_data
     }
     return render(request, 'pages/dashboard.html', context)
 
+
+def mark_summary_checked(request, pk):
+    if request.method == "POST":
+        try:
+            summary = WeeklySummary.objects.get(pk=pk)
+            summary.has_checked = True
+            summary.save()
+            return JsonResponse({"status": "success"})
+        except WeeklySummary.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Not found"}, status=404)
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 # ---------- Logs ----------
 @login_required
@@ -322,6 +344,12 @@ def analytics(request):
 
     calendar_events = checkins + streak_events
 
+    # latest summary for the logged-in user
+    summary = WeeklySummary.objects.filter(user=request.user).order_by('-week_start').first()
+    sum_line_data = {}
+    if summary:
+        sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
+
     context = {
         "profile": profile,
         "line_data": line_data,
@@ -332,6 +360,8 @@ def analytics(request):
         "milestones": milestones,
         "fastest_drop": fastest_drop,
         "calendar_events": calendar_events,
+        'summary': summary,
+        'sum_line_data': sum_line_data
     }
     return render(request, "pages/analytics.html", context)
 
@@ -367,3 +397,15 @@ def health_json(request):
         "database": db_status,
         "checked_at": timezone.now().isoformat(),
     })
+
+
+# ---------- Weekly summary ----------
+@csrf_exempt
+def run_weekly_summary(request):
+    # simple token-based protection
+    token = request.GET.get("token")
+    if token != settings.CRON_SECRET:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    call_command("generate_weekly_summaries")
+    return JsonResponse({"status": "success"})

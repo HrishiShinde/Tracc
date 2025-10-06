@@ -95,6 +95,37 @@
             {% endif %}
         </div>
 
+        <!-- Weekly Summary! -->
+        <!-- {% if summary and not summary.has_checked %}
+        <div 
+            class="summary-card mb-5 d-flex justify-content-between align-items-center"
+            data-bs-toggle="modal" 
+            data-bs-target="#summaryModal"
+        >
+            Your Weekly Summary is ready!
+            <i class="bi bi-box-arrow-in-right"></i>
+        </div>
+        {% endif %} -->
+            
+        <!-- Weekly Summary Trigger Card -->
+        {% if summary and not summary.has_checked %}
+        <div 
+            class="summary-card mb-5"
+            data-bs-toggle="modal" 
+            data-bs-target="#summaryModal"
+            onclick="markChecked()"
+        >
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1 fw-bold">Your Weekly Summary is Ready!</h5>
+                    <small class="text-muted">Tap to view your progress</small>
+                </div>
+                <i class="bi bi-box-arrow-in-right fs-3r"></i>
+            </div>
+            {{ summary.id | json_script:"summary_id" }}
+        </div>
+        {% endif %}
+
         <!-- Recent Logs -->
         <h4 class="mb-3">Recent Weight Logs</h4>
         <ul class="list-group mb-4">
@@ -118,12 +149,29 @@
             </div>
         </div>
     </div>
-    
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        function markChecked() {
+            const summaryId = document.getElementById("summary_id").innerHTML;
+            fetch(`/weekly-summary-check/${summaryId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success"){
+                    console.log("Marked as checked");
+                    // optional: hide the card immediately
+                    // document.querySelector('.summary-card').style.display = 'none';
+                }
+            });
+        }
         document.addEventListener("DOMContentLoaded", () => {
             // Clock in time localization.
             const el = document.getElementById("clock-in-time");
@@ -164,9 +212,9 @@
             const progress_ctx = document.getElementById('progressChart').getContext('2d');
             const lineData = JSON.parse(document.getElementById('line-data').textContent);
 
-            const weights = lineData.weights || [];
-            const minWeight = Math.min(...weights);
-            const maxWeight = Math.max(...weights);
+            let weights = lineData.weights || [];
+            let minWeight = Math.min(...weights);
+            let maxWeight = Math.max(...weights);
 
             new Chart(progress_ctx, {
                 type: 'line',
