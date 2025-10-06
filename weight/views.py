@@ -317,7 +317,11 @@ def analytics(request):
     # Cards.
     streaks = profile.streaks
     fastest_drop = insights.get_fastest_drop()
-    milestones = UserMilestone.objects.filter(profile=profile).last().milestone
+    usermilestones = UserMilestone.objects.filter(profile=profile).last()
+
+    milestones = []
+    if usermilestones:
+        milestones = usermilestones.milestone
 
     # Calendar events.
     streak_events = []

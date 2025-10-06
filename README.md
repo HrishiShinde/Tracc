@@ -6,6 +6,21 @@
 
 ---
 
+## 🆕 What’s New in v2.0
+
+We’ve polished, revamped, and added *major* updates to make Tracc smoother and smarter 💪  
+
+- ✅ **Analytics Upgrade** – Get deeper insights into your weight trends, streaks, and goals.  
+- ✅ **Weekly Summary (Extractive AI)** – Automatically generated summaries highlighting your week’s progress.  
+  - New **Weekly Summary Template** with updated UI.  
+  - Integrated real-time data from user logs.  
+  - Marks summary as “checked” once viewed to keep tracking consistent.  
+  - Highlights section improved with adaptive data logic.  
+- ✅ **Bottom Navigation (Mobile View)** – Sleek and responsive navigation bar for quick access.  
+- ✅ **Bug Fixes & DB Migration** – Performance boosts, smoother UI transitions, and backend optimizations.  
+
+---
+
 ## ✨ Features
 
 - **Daily Weight Logging** – Quickly log your weight and add optional notes about workouts, meals, or mood.  
