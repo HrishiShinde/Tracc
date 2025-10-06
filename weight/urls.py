@@ -37,5 +37,8 @@ urlpatterns = [
 
     # Health.
     path("health/", views.health_view, name="health_page"),
-    path("healthz/", views.health_json, name="health_json"),
+    path("healthz/", views.health_json, name="health_json"),\
+    
+    # Weekly summary.
+    path("run-weekly-summary/", views.run_weekly_summary, name="run_weekly_summary"),
 ]

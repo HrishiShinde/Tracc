@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
+from django.core.management import call_command
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from .models import Profile, WeightLog, UserMilestone, WeeklySummary
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
@@ -394,3 +397,15 @@ def health_json(request):
         "database": db_status,
         "checked_at": timezone.now().isoformat(),
     })
+
+
+# ---------- Weekly summary ----------
+@csrf_exempt
+def run_weekly_summary(request):
+    # simple token-based protection
+    token = request.GET.get("token")
+    if token != settings.CRON_SECRET:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    call_command("generate_weekly_summaries")
+    return JsonResponse({"status": "success"})
