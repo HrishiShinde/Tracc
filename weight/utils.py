@@ -1,4 +1,6 @@
 from .models import Milestone, UserMilestone, Profile, WeightLog
+from datetime import timedelta
+import pandas as pd
 
 
 def _assign_milestone(profile, milestone_title):
@@ -6,6 +8,7 @@ def _assign_milestone(profile, milestone_title):
     obj, created = UserMilestone.objects.get_or_create(profile=profile, milestone=milestone)
     if created:
         print(f"🏅 {profile.user.username} achieved: {milestone.title}")
+
 
 def check_for_achievements(profile):
     logs = profile.weightlog_set.exclude(weight__isnull=True).order_by("date")
@@ -289,11 +292,41 @@ class Insights:
         else: 
             logs = self.logs
 
-        if logs:
-            line_data = {
-                "labels": [log.date.strftime('%d-%m-%Y') for log in logs],
-                "weights": [log.weight for log in logs]
-            }
+        if not logs:
+            return line_data
+
+        # Convert to DataFrame
+        data = {
+            "date": [log.date for log in logs],
+            "weight": [log.weight for log in logs]
+        }
+        df = pd.DataFrame(data)
+        if date_range:
+            print(df)
+
+        # Set date as index
+        df.set_index("date", inplace=True)
+        df.sort_index(inplace=True)
+
+        # Determine full range
+        if date_range:
+            start_date, end_date = date_range
+        else:
+            start_date, end_date = df.index.min(), df.index.max()
+
+        # Create full date range (inclusive)
+        full_range = pd.date_range(start=start_date, end=end_date, freq='D')
+        df = df.reindex(full_range)
+
+        # Forward fill missing weights
+        df["weight"] = df["weight"].ffill().bfill()
+
+        # Format output
+        line_data = {
+            "labels": [d.strftime('%d-%m-%Y') for d in df.index],
+            "weights": df["weight"].tolist()
+        }
+
         return line_data
 
     def get_daily_change(self):
