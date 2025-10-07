@@ -9,6 +9,7 @@ def _assign_milestone(profile, milestone_title):
     if created:
         print(f"🏅 {profile.user.username} achieved: {milestone.title}")
 
+
 def check_for_achievements(profile):
     logs = profile.weightlog_set.exclude(weight__isnull=True).order_by("date")
     streaks = profile.streaks
