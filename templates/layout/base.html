@@ -74,16 +74,14 @@
     </div>
 
     <!-- Floating Add Button -->
-    <!-- {% if show_qab %}
     <button 
-        class="btn shadow-lg add-btn"
+        class="btn shadow-lg flt-add-btn"
         data-bs-toggle="modal" 
         data-bs-target="#addEditModal"
         onclick="openAddModal()"
     >
         <i class="bi bi-plus-lg"></i>
     </button>
-    {% endif  %} -->
 
     <!-- Bottom Navbar -->
      
@@ -294,21 +292,27 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 scales: {
                     x: {
                         title: {
                             display: false,
                         },
+                        grid: {
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-bottom-color') || '#cccccc'
+                        },
                         ticks: {
                             autoSkip: true,
                             maxRotation: 45,
-                            minRotation: 0
-                        }
+                            minRotation: 0,
+                        },
                     },
                     y: {
                         title: {
                             display: false,
+                        },
+                        grid: {
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-bottom-color') || '#cccccc'
                         },
                         beginAtZero: false,
                         suggestedMin: minWeight - 2,
