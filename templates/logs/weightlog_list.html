@@ -14,17 +14,15 @@
         <!-- Logs List -->
         <ul class="list-group">
             {% for log in logs %}
-            <li 
-                class="list-group-item d-flex justify-content-between" 
-                data-bs-toggle="modal" data-bs-target="#addEditModal"
-                onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
-            >
-                <div>
+            <li class="list-group-item d-flex align-items-center">
+                <div class="col-11" data-bs-toggle="modal" data-bs-target="#addEditModal" 
+                    onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
+                >
                     <strong>{{ log.date }}</strong> - {{ log.weight }} kg
                     <br>
                     {% if log.notes %}{{ log.notes }}{% endif %}
                 </div>
-                <div>
+                <div class="col-1">
                     <div class="dropdown">
                         <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <svg width="12" height="14" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">

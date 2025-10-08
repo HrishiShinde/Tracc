@@ -301,8 +301,6 @@ class Insights:
             "weight": [log.weight for log in logs]
         }
         df = pd.DataFrame(data)
-        if date_range:
-            print(df)
 
         # Set date as index
         df.set_index("date", inplace=True)
