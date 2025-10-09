@@ -10,11 +10,14 @@ from django.core.management import call_command
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
-from .models import Profile, WeightLog, UserMilestone, WeeklySummary
-from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 import csv
 import io
 from datetime import datetime, timedelta
+import random
+
+from .models import Profile, WeightLog, UserMilestone, WeeklySummary
+from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
+
 
 # ---------- Register ----------
 def register_view(request):
@@ -225,6 +228,23 @@ def settings(request):
 
 
 # ---------- Import Logs ----------
+def generate_logs(profile, weight, start_date, end_date):
+    log_count = (end_date - start_date).days - 1
+    for i in range(log_count):
+        date = start_date - timedelta(days=i+1)
+        weight_variation = random.uniform(-0.8, 0.8)
+        new_weight = round(weight + weight_variation, 1)
+        bmi = calculate_bmi(new_weight, profile.height_cm).get("value")
+        
+        log, created = WeightLog.objects.get_or_create(
+            profile=profile,
+            date=date,
+            defaults={"weight": weight, "notes": "Auto generated log.", "bmi": bmi}
+        )
+        weight = new_weight
+
+    return created
+
 @login_required
 def import_logs(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
@@ -246,16 +266,24 @@ def import_logs(request):
         for row in reader:
             try:
                 # Parse date
+                prev_date, prev_weight = None
                 date_obj = datetime.strptime(row["Date"], "%d/%m/%y").date()
 
                 weight = float(row["Weight (kg)"]) if row["Weight (kg)"] else None
                 notes = row.get("Notes/Mood", "")
+                bmi = calculate_bmi(weight, profile.height_cm).get("value") if weight else None
+
+                if prev_date and (prev_date - date_obj).days > 1:
+                    generate_logs(profile, prev_weight, prev_date, date_obj)
+
+                prev_date = date_obj
+                prev_weight = weight
 
                 # Avoid duplicates
                 log, created = WeightLog.objects.get_or_create(
                     profile=profile,
                     date=date_obj,
-                    defaults={"weight": weight, "notes": notes}
+                    defaults={"weight": weight, "notes": notes, "bmi": bmi}
                 )
 
                 if not created:
@@ -269,6 +297,10 @@ def import_logs(request):
             except Exception as e:
                 print(f"Row skipped due to error: {e}")
                 continue
+
+        # Update Streaks and check achievements.
+        update_streaks(profile)
+        check_for_achievements(profile)
 
         messages.success(request, f"{imported_count} logs imported successfully!")
         return redirect("settings")
