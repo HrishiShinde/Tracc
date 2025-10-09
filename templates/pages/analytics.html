@@ -28,18 +28,25 @@
                 </p>
             </div>
             {% endif %}
+
             <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;" 
                 data-bs-toggle="modal" data-bs-target="#calendarModal"
             >
                 <h6 class="fw-bold">Streaks</h6>
-                <p class="fs-3r mb-0">
-                    <i class="bi bi-fire streaks-icon front-icon"></i>
-                    <span class="inner-fire"></span>
-                    {{streaks}}
-                </p>
+                <div class="fs-3r mb-0 mt-3 d-flex justify-content-between align-items-center">
+                    <div class="fs-3r">
+                        <i class="bi bi-fire streaks-icon front-icon"></i>
+                        <span class="inner-fire"></span>
+                    </div>
+                    <div class="fs-3r">
+                        {{streaks}}
+                    </div>
+                </div>
             </div>
             
-            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;"
+                data-bs-toggle="modal" data-bs-target="#milestoneModal"
+            >
                 <h6 class="fw-bold text-gold">Milestone</h6>
                 <p class="mb-0 d-flex justify-content-between align-items-center">
                     {% if milestones %}
@@ -105,6 +112,40 @@
             <div class="modal-body">
                 <div id="calendar"></div>
                 {{ calendar_events|json_script:"calendar-events" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Milestones Modal -->
+<div class="modal fade bg-blur" id="milestoneModal" tabindex="-1" >
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Milestones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Milestone Icons Grouped by Category -->
+                <div class="milestone-category-container mt-3">
+                    {% regroup all_milestones by category as category_groups %}
+                    {% for group in category_groups %}
+                        <div class="milestone-category mb-4">
+                            <h6 class="category-title text-muted small mb-2 text-uppercase">
+                                {{ group.grouper }}
+                            </h6>
+                            <div class="milestone-icons d-flex flex-wrap justify-content-center">
+                                {% for m in group.list %}
+                                    <div class="milestone-icon-wrapper">
+                                        <i class="bi bi-award milestone-icon {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></i>
+                                        <span class="inner-milestone-icon {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></span>
+                                        <div class="milestone-label small mt-1">{{ m.title }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>

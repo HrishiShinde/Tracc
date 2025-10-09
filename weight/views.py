@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
+from django.db.models import Exists, OuterRef
 from django.core.management import call_command
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -15,7 +16,7 @@ import io
 from datetime import datetime, timedelta
 import random
 
-from .models import Profile, WeightLog, UserMilestone, WeeklySummary
+from .models import Profile, WeightLog, UserMilestone, WeeklySummary, Milestone
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 
 
@@ -351,9 +352,20 @@ def analytics(request):
     fastest_drop = insights.get_fastest_drop()
     usermilestones = UserMilestone.objects.filter(profile=profile).last()
 
-    milestones = []
+    milestones = None
     if usermilestones:
         milestones = usermilestones.milestone
+
+
+    # Fetch all milestones and annotate if unlocked for this user
+    all_milestones = Milestone.objects.annotate(
+        is_unlocked=Exists(
+            UserMilestone.objects.filter(
+                milestone=OuterRef('pk'), 
+                profile=profile
+            )
+        )
+    ).order_by('category')
 
     # Calendar events.
     streak_events = []
@@ -394,6 +406,7 @@ def analytics(request):
         "weight_zones": weight_zones,
         "streaks": streaks,
         "milestones": milestones,
+        "all_milestones": all_milestones,
         "fastest_drop": fastest_drop,
         "calendar_events": calendar_events,
         'summary': summary,
