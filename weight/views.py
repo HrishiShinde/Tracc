@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import connection
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, F, Value
+from django.db.models.functions import Replace
 from django.core.management import call_command
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -364,7 +365,8 @@ def analytics(request):
                 milestone=OuterRef('pk'), 
                 profile=profile
             )
-        )
+        ),
+        clean_category=Replace(F('category'), Value('_'), Value(' ')),
     ).order_by('category')
 
     # Calendar events.
