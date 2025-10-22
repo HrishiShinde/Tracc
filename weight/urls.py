@@ -25,15 +25,12 @@ urlpatterns = [
     path('clock_in/', views.add_or_edit_weight_log, name='clock_in'),
 
     # Settings
-    path('settings/', views.settings, name='settings'),
+    path('settings/', views.settings_views, name='settings'),
     path("import-logs/", views.import_logs, name="import_logs"),
     path("export-logs/", views.export_logs, name="export_logs"),
 
     # Analytics
     path('analytics/', views.analytics, name='analytics'),
-
-    # Catch-all empty path redirect
-    path('', lambda request: redirect('dashboard'), name='home_redirect'),
 
     # Health.
     path("health/", views.health_view, name="health_page"),
@@ -41,4 +38,7 @@ urlpatterns = [
     
     # Weekly summary.
     path("run-weekly-summary/", views.run_weekly_summary, name="run_weekly_summary"),
+
+    # Catch-all empty path redirect
+    path('', lambda request: redirect('dashboard'), name='home_redirect'),
 ]
