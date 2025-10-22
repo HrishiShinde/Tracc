@@ -73,6 +73,8 @@
         {% block content %}{% endblock %}
     </div>
 
+     
+    {% if request.user.is_authenticated %}
     <!-- Floating Add Button -->
     <button 
         class="btn shadow-lg flt-add-btn"
@@ -84,8 +86,6 @@
     </button>
 
     <!-- Bottom Navbar -->
-     
-    {% if request.user.is_authenticated %}
     <nav class="bottom-navbar d-lg-none">
         <a href="{% url 'dashboard' %}" class="nav-item text-center">
             <i class="bi bi-house-door"></i>
