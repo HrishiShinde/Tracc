@@ -182,6 +182,22 @@ p {
     padding: 1rem 1rem 2.5rem 1rem !important;
 }
 
+#progressChart, #weightChangeChart {
+    height: 290px !important;
+}
+
+.filters {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 12px;
+}
+
+.btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
+    border-radius: 20px !important;
+    color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+
 .card-analytic {
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
