@@ -80,8 +80,8 @@ class Command(BaseCommand):
                     week_start=start_date,
                     week_end=end_date,
                     defaults={
-                        "average_weight": avg_weight,
-                        "weight_change": weight_change,
+                        "avg_weight": avg_weight,
+                        "change_from_last_week": weight_change,
                         "bmi_status": bmi_status,
                         "highlights": highlights,
                         "streak": streak,
@@ -91,6 +91,8 @@ class Command(BaseCommand):
 
                 self.stdout.write(f"Summary generated for {profile.user.username}")
         except Exception as e:
+            import traceback
             self.stdout.write(f"Error occured while generating summaries: {e}")
+            traceback.print_exc()
 
         self.stdout.write(self.style.SUCCESS("Weekly summary generation complete!"))
