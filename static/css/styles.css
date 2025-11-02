@@ -182,6 +182,22 @@ p {
     padding: 1rem 1rem 2.5rem 1rem !important;
 }
 
+#progressChart, #weightChangeChart {
+    height: 290px !important;
+}
+
+.filters {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 12px;
+}
+
+.btn-check.line-filters:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
+    border-radius: 20px !important;
+    color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+
 .card-analytic {
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -232,16 +248,51 @@ p {
     pointer-events: none; /* so clicks go to the cell, not icon */
 }
 
+.fc-theme-standard .fc-scrollgrid {
+    border: 0px !important;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 20px !important;
+    margin: 5px 0px 0px 0px !important;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 0.5em !important;
+}
+
+.fc .fc-toolbar-chunk .fc-button {
+    background: transparent !important;
+    color: var(--bs-primary, --fc-button-text-color) !important;
+    /* border: 1px solid var(--bs-primary, --fc-button-border-color) !important; */
+    border-radius: 8px !important;
+    transition: all 0.3s ease;
+    box-shadow: none !important;
+}
+
+.fc .fc-toolbar-chunk .fc-button:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: #fff !important;
+    color: #fff !important;
+}
+
+.fc .fc-toolbar-chunk .fc-button:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+}
+
+
+
 .card-analytic p {
     position: relative; /* Create a positioning context */
 }
 
 .bi-award {
     background: linear-gradient(45deg, #FFD700, #FF8C00);
-    background-clip: text;              /* standard */
-    -webkit-background-clip: text;      /* for Chrome/Safari */
+    background-clip: text;
+    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: transparent;                 /* fallback */
+    color: transparent;
 }
 
 .inner-medal {
@@ -259,12 +310,11 @@ p {
 
 .inner-fire {
     background-color: orange;
-    height: 31px;
+    height: 30px;
     width: 30px;
     border-radius: 17px;
-    position: absolute;
-    left: 20%;
-    top: 28%;
+    position: relative;
+    left: -50%;
     z-index: 1;
 }
 
@@ -274,8 +324,8 @@ p {
     width: 15px;
     border-radius: 17px;
     position: absolute;
-    left: 35%;
-    top: 28%;
+    left: 32%;
+    top: 30%;
     z-index: 1;
 }
 
@@ -348,3 +398,131 @@ p {
     width: 100% !important;
     height: 100% !important;
 }
+
+.milestone-category-container {
+    margin-top: 1rem;
+}
+
+/* Each category group */
+.milestone-category {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+}
+
+/* Last one — no divider */
+.milestone-category:last-child {
+    border-bottom: none;
+}
+
+/* Category title */
+.category-title {
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #aaa;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Icon row */
+.milestone-icons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-top: 10px;
+}
+
+/* Wrapper */
+.milestone-icon-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 70px;
+    height: 80px;
+    cursor: pointer;
+    transition: transform 0.25s ease, filter 0.3s ease;
+}
+
+.milestone-icon-wrapper:hover {
+    transform: translateY(-5px) scale(1.1);
+}
+
+/* Icon */
+.milestone-icon {
+    font-size: 2.8rem;
+    line-height: 1;
+    display: inline-block;
+    transition: filter 0.3s ease, transform 0.2s ease;
+    margin-bottom: 6px;
+}
+
+/* Locked icons */
+.milestone-icon.locked {
+    filter: grayscale(100%) brightness(60%);
+    opacity: 0.6;
+}
+
+/* Unlocked icons */
+.milestone-icon.unlocked {
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    z-index: 2;
+}
+
+/* Locked icons */
+.inner-milestone-icon.locked {
+    filter: grayscale(100%) brightness(70%);
+}
+
+
+
+/* UNLOCKED CATEGORY COLORS */
+.inner-milestone-icon.bmi.unlocked {
+    background: linear-gradient(45deg, #7B1FA2, #CE93D8);
+}
+.inner-milestone-icon.consistency.unlocked {
+    background: linear-gradient(45deg, #0288D1, #00B0FF);
+}
+.inner-milestone-icon.streak.unlocked {
+    background: linear-gradient(45deg, #b98e01, #ffa631);
+}
+.inner-milestone-icon.target.unlocked {
+    background: linear-gradient(45deg, #af0000, #FF1744);
+}
+.inner-milestone-icon.weight_loss.unlocked {
+    background: linear-gradient(45deg, #4CAF50, #2E7D32);
+}
+
+
+/* Unlocked icons */
+.inner-milestone-icon.unlocked {
+    height: 31px;
+    width: 30px;
+    border-radius: 17px;
+    position: absolute;
+    z-index: 1;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Label below */
+.milestone-label {
+    color: #aaa;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+    text-align: center;
+    max-width: 80px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+}
+
+.milestone-icon-wrapper:hover .milestone-label {
+    opacity: 1;
+    color: var(--text-color);
+}
+

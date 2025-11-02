@@ -12,6 +12,19 @@
             <h5 class="card-title">Progress Over Time</h5>
             <canvas id="progressChart"></canvas>
             {{ line_data|json_script:"line-data" }}
+
+            <div class="filters">
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-1W" autocomplete="off" onclick="filterData('1W', 'p')">
+                <label class="btn line-filters" for="line-filter-1W">1W</label>
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-1M" autocomplete="off" checked onclick="filterData('1M', 'p')">
+                <label class="btn line-filters" for="line-filter-1M">1M</label>
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-3W" autocomplete="off" onclick="filterData('3M', 'p')">
+                <label class="btn line-filters" for="line-filter-3W">3M</label>
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-6M" autocomplete="off" onclick="filterData('6M', 'p')">
+                <label class="btn line-filters" for="line-filter-6M">6M</label>
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-all" autocomplete="off" onclick="filterData('ALL', 'p')">
+                <label class="btn line-filters" for="line-filter-all">ALL</label>
+            </div>
         </div>
     </div>
 
@@ -28,18 +41,25 @@
                 </p>
             </div>
             {% endif %}
+
             <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;" 
                 data-bs-toggle="modal" data-bs-target="#calendarModal"
             >
                 <h6 class="fw-bold">Streaks</h6>
-                <p class="fs-3r mb-0">
-                    <i class="bi bi-fire streaks-icon front-icon"></i>
-                    <span class="inner-fire"></span>
-                    {{streaks}}
-                </p>
+                <div class="fs-3r mb-0 mt-3 d-flex justify-content-center align-items-center">
+                    <div class="fs-3r d-flex align-items-center">
+                        <i class="bi bi-fire streaks-icon front-icon"></i>
+                        <span class="inner-fire"></span>
+                    </div>
+                    <div class="fs-3r" style="margin-left: -15px;">
+                        {{streaks}}
+                    </div>
+                </div>
             </div>
             
-            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;">
+            <div class="card card-analytic text-center p-2 flex-shrink-0" style="width: 140px;"
+                data-bs-toggle="modal" data-bs-target="#milestoneModal"
+            >
                 <h6 class="fw-bold text-gold">Milestone</h6>
                 <p class="mb-0 d-flex justify-content-between align-items-center">
                     {% if milestones %}
@@ -71,6 +91,19 @@
             <h5 class="card-title">Daily Change</h5>
             <canvas id="weightChangeChart"></canvas>
             {{ daily_changes|json_script:"daily-changes-data" }}
+
+            <div class="filters">
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-1W" autocomplete="off" onclick="filterData('1W', 'd')">
+                <label class="btn line-filters" for="daily-filter-1W">1W</label>
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-1M" autocomplete="off" checked onclick="filterData('1M', 'd')">
+                <label class="btn line-filters" for="daily-filter-1M">1M</label>
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-3W" autocomplete="off" onclick="filterData('3M', 'd')">
+                <label class="btn line-filters" for="daily-filter-3W">3M</label>
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-6M" autocomplete="off" onclick="filterData('6M', 'd')">
+                <label class="btn line-filters" for="daily-filter-6M">6M</label>
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-all" autocomplete="off" onclick="filterData('ALL', 'd')">
+                <label class="btn line-filters" for="daily-filter-all">ALL</label>
+            </div>
         </div>
     </div>
 
@@ -98,13 +131,47 @@
 <div class="modal fade bg-blur" id="calendarModal" tabindex="-1" >
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-3">
-            <div class="modal-header">
+            <!-- <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">Streaks</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            </div> -->
             <div class="modal-body">
                 <div id="calendar"></div>
                 {{ calendar_events|json_script:"calendar-events" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Milestones Modal -->
+<div class="modal fade bg-blur" id="milestoneModal" tabindex="-1" >
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Milestones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Milestone Icons Grouped by Category -->
+                <div class="milestone-category-container mt-3">
+                    {% regroup all_milestones by clean_category as category_groups %}
+                    {% for group in category_groups %}
+                        <div class="milestone-category mb-4">
+                            <h6 class="category-title text-muted small mb-2 text-uppercase">
+                                {{ group.grouper|title|cut:"_" }}
+                            </h6>
+                            <div class="milestone-icons d-flex flex-wrap justify-content-center">
+                                {% for m in group.list %}
+                                    <div class="milestone-icon-wrapper">
+                                        <i class="bi bi-award milestone-icon {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></i>
+                                        <span class="inner-milestone-icon {{ m.category }} {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></span>
+                                        <div class="milestone-label small mt-1">{{ m.title }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -163,7 +230,11 @@
         const progress_ctx = document.getElementById('progressChart').getContext('2d');
         const lineData = JSON.parse(document.getElementById('line-data').textContent);
 
-        new Chart(progress_ctx, {
+        // Store original data
+        const lineLabels = [...lineData.labels];
+        const lineWeights = [...lineData.weights];
+
+        const progressChart = new Chart(progress_ctx, {
             type: 'line',
             data: {
                 labels: lineData.labels,
@@ -205,13 +276,17 @@
         const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
         const dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
 
-        new Chart(weight_change_ctx, {
+        // Store original data
+        const dcLabels = dailyChanges.map(entry => entry.date);
+        const dcWeights = dailyChanges.map(entry => entry.change);
+        
+        const dailyChangeChart = new Chart(weight_change_ctx, {
             type: 'bar',
             data: {
-                labels: dailyChanges.map(entry => entry.date),
+                labels: dcLabels,
                 datasets: [{
                     label: 'Daily Change (kg)',
-                    data: dailyChanges.map(entry => entry.change),
+                    data: dcWeights,
                     backgroundColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
                     borderColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
                     borderWidth: 1
@@ -220,6 +295,13 @@
             options: { 
                 responsive: true,
                 maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false
+                        },
+                    },
+                }
             }
         });
 
@@ -360,6 +442,325 @@
                 }
             }
         });
+
+        window.filterData = function(range, chart) {
+            const today = new Date();
+            let filteredLabels = [];
+            let filteredWeights = [];
+
+            // Update chart data
+            let chart_ctx = null;
+            if (chart == "p") {
+                chart_ctx = progressChart;
+                lineLabels.forEach((dateStr, index) => {
+                    const [day, month, year] = dateStr.split('-');
+                    const date = new Date(`${month}-${day}-${year}`);
+                    const diffDays = (today - date) / (1000 * 60 * 60 * 24);
+
+                    if (
+                        (range === '1W' && diffDays <= 7) ||
+                        (range === '1M' && diffDays <= 30) ||
+                        (range === '3M' && diffDays <= 90) ||
+                        (range === '6M' && diffDays <= 180) ||
+                        range === 'ALL'
+                    ) {
+                        filteredLabels.push(dateStr);
+                        filteredWeights.push(lineWeights[index]);
+                    }
+                });
+            } else if (chart == "d") {
+                chart_ctx = dailyChangeChart;
+                dcLabels.forEach((dateStr, index) => {
+                    const [day, month, year] = dateStr.split('-');
+                    const date = new Date(`${month}-${day}-${year}`);
+                    const diffDays = (today - date) / (1000 * 60 * 60 * 24);
+
+                    if (
+                        (range === '1W' && diffDays <= 7) ||
+                        (range === '1M' && diffDays <= 30) ||
+                        (range === '3M' && diffDays <= 90) ||
+                        (range === '6M' && diffDays <= 180) ||
+                        range === 'ALL'
+                    ) {
+                        filteredLabels.push(dateStr);
+                        filteredWeights.push(dcWeights[index]);
+                    }
+                });
+            }
+            chart_ctx.data.labels = filteredLabels;
+            chart_ctx.data.datasets[0].data = filteredWeights;
+            chart_ctx.update();
+        };
+
+        filterData('1M', 'p');
+        filterData('1M', 'd');
     });
 </script>
+
+<!-- 
+<script>
+    let progressChart, weightChangeChart, zonesChart, monthlyChart;
+    let lineData, dailyChanges, weightZones, monthlyAvg;
+    const current_bmi = JSON.parse(document.getElementById('current-bmi').textContent);
+
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function parseDate(dateStr) {
+        const [day, month, year] = dateStr.split('-');
+        return new Date(`${year}-${month}-${day}`);
+    }
+
+    function filterData(range) {
+        const today = new Date();
+
+        function withinRange(dateStr) {
+            const date = parseDate(dateStr);
+            const diffDays = (today - date) / (1000 * 60 * 60 * 24);
+
+            if (range === '1W') return diffDays <= 7;
+            if (range === '1M') return diffDays <= 30;
+            if (range === '3M') return diffDays <= 90;
+            if (range === '6M') return diffDays <= 180;
+            return true;
+        }
+
+        const filteredLineLabels = [];
+        const filteredLineWeights = [];
+        lineData.labels.forEach((lbl, i) => {
+            if (withinRange(lbl)) {
+                filteredLineLabels.push(lbl);
+                filteredLineWeights.push(lineData.weights[i]);
+            }
+        });
+
+        progressChart.data.labels = filteredLineLabels;
+        progressChart.data.datasets[0].data = filteredLineWeights;
+        progressChart.update();
+
+        const filteredDailyLabels = [];
+        const filteredDailyVals = [];
+        dailyChanges.forEach((entry) => {
+            if (withinRange(entry.date)) {
+                filteredDailyLabels.push(entry.date);
+                filteredDailyVals.push(entry.change);
+            }
+        });
+
+        weightChangeChart.data.labels = filteredDailyLabels;
+        weightChangeChart.data.datasets[0].data = filteredDailyVals;
+        weightChangeChart.update();
+
+        const filteredMonthly = monthlyAvg.filter((e) => {
+            return withinRange("01-" + e.month); 
+        });
+
+        monthlyChart.data.labels = filteredMonthly.map(e => e.month);
+        monthlyChart.data.datasets[0].data = filteredMonthly.map(e => e.avg_weight);
+        monthlyChart.data.datasets[1].data = filteredMonthly.map(e => e.avg_bmi);
+        monthlyChart.update();
+
+        // Zones chart does not use dates directly.
+        // Optional: Adjust if dynamic zone filtering required later.
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        lineData = JSON.parse(document.getElementById('line-data').textContent);
+        dailyChanges = JSON.parse(document.getElementById('daily-changes-data').textContent);
+        weightZones = JSON.parse(document.getElementById('weight-zones-data').textContent);
+        monthlyAvg = JSON.parse(document.getElementById('monthly-avg-data').textContent);
+
+        // Initialize all charts like before
+        const progress_ctx = document.getElementById('progressChart').getContext('2d');
+        progressChart = new Chart(progress_ctx, {
+            type: 'line',
+            data: {
+                labels: lineData.labels,
+                datasets: [{
+                    label: 'Weight',
+                    data: lineData.weights,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return `${ctx.parsed.y} Kgs`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false   // hides month labels on X-axis
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            display: false   // hides month labels on X-axis
+                        },
+                    },
+                }
+            }
+        });
+
+        const weight_change_ctx = document.getElementById('weightChangeChart').getContext('2d');
+        weightChangeChart = new Chart(weight_change_ctx, {
+            type: 'bar',
+            data: {
+                labels: dailyChanges.map(entry => entry.date),
+                datasets: [{
+                    label: 'Daily Change (kg)',
+                    data: dailyChanges.map(entry => entry.change),
+                    backgroundColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                    borderColor: dailyChanges.map(c => c < 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        const zone_ctx = document.getElementById('zonesGraph').getContext('2d');
+        zonesChart = new Chart(zone_ctx, {
+            type: 'doughnut',  // donut chart
+            data: {
+                labels: weightZones.map(entry => entry.label),
+                datasets: [{
+                    label: 'BMI Zones',
+                    data: weightZones.map(entry => entry.count),
+                    backgroundColor: weightZones.map(entry => getCssVar(entry.color)),
+                    hoverOffset: 6,
+                    borderWidth: 2,
+                    borderColor: "#fff"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%', // makes it a donut
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 12,
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return `${ctx.label}: ${ctx.parsed} days`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'bmiCenterText',
+                beforeDraw: (chart) => {
+                    const { ctx, chartArea: {left, right, top, bottom} } = chart;
+                    ctx.save();
+
+                    const centerX = (left + right) / 2;
+                    const centerY = (top + bottom) / 2;
+
+                    ctx.font = `${(chart.height / 8).toFixed(0)}px ${getCssVar("--bs-font-sans-serif")}, system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = getCssVar('--text-color');
+
+                    const text = current_bmi ? current_bmi.toFixed(1) : "N/A";
+                    ctx.fillText(text, centerX, centerY);
+                    ctx.restore();
+                }
+            }]
+        });
+
+        const monthly_ctx = document.getElementById('monthlyGraph').getContext('2d');
+        monthlyChart = new Chart(monthly_ctx, {
+            type: 'bar',
+            data: {
+                labels: monthlyAvg.map(entry => entry.month),
+                datasets: [
+                    {
+                        label: 'Avg Weight (kg)',
+                        data: monthlyAvg.map(entry => entry.avg_weight),
+                        borderColor: getCssVar('--text-color'),
+                        backgroundColor: getCssVar('--text-color'),
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Avg BMI',
+                        data: monthlyAvg.map(entry => entry.avg_bmi),
+                        borderColor: getCssVar('--accent-color'),
+                        backgroundColor: getCssVar('--accent-color'),
+                        borderDash: [5, 5], // dashed line to differentiate
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.dataset.label.includes("Weight")) {
+                                    return ctx.parsed.y + " kg";
+                                }
+                                if (ctx.dataset.label.includes("BMI")) {
+                                    return ctx.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Weight (kg)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'BMI'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script> -->
 {% endblock %}
