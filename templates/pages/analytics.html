@@ -16,13 +16,13 @@
             <div class="filters">
                 <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-1W" autocomplete="off" onclick="filterData('1W', 'p')">
                 <label class="btn line-filters" for="line-filter-1W">1W</label>
-                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-1M" autocomplete="off" onclick="filterData('1M', 'p')">
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-1M" autocomplete="off" checked onclick="filterData('1M', 'p')">
                 <label class="btn line-filters" for="line-filter-1M">1M</label>
                 <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-3W" autocomplete="off" onclick="filterData('3M', 'p')">
                 <label class="btn line-filters" for="line-filter-3W">3M</label>
                 <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-6M" autocomplete="off" onclick="filterData('6M', 'p')">
                 <label class="btn line-filters" for="line-filter-6M">6M</label>
-                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-all" autocomplete="off" checked onclick="filterData('ALL', 'p')">
+                <input type="radio" class="btn-check line-filters" name="line-filter" id="line-filter-all" autocomplete="off" onclick="filterData('ALL', 'p')">
                 <label class="btn line-filters" for="line-filter-all">ALL</label>
             </div>
         </div>
@@ -95,13 +95,13 @@
             <div class="filters">
                 <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-1W" autocomplete="off" onclick="filterData('1W', 'd')">
                 <label class="btn line-filters" for="daily-filter-1W">1W</label>
-                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-1M" autocomplete="off" onclick="filterData('1M', 'd')">
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-1M" autocomplete="off" checked onclick="filterData('1M', 'd')">
                 <label class="btn line-filters" for="daily-filter-1M">1M</label>
                 <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-3W" autocomplete="off" onclick="filterData('3M', 'd')">
                 <label class="btn line-filters" for="daily-filter-3W">3M</label>
                 <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-6M" autocomplete="off" onclick="filterData('6M', 'd')">
                 <label class="btn line-filters" for="daily-filter-6M">6M</label>
-                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-all" autocomplete="off" checked onclick="filterData('ALL', 'd')">
+                <input type="radio" class="btn-check line-filters" name="daily-filter" id="daily-filter-all" autocomplete="off" onclick="filterData('ALL', 'd')">
                 <label class="btn line-filters" for="daily-filter-all">ALL</label>
             </div>
         </div>
@@ -491,6 +491,9 @@
             chart_ctx.data.datasets[0].data = filteredWeights;
             chart_ctx.update();
         };
+
+        filterData('1M', 'p');
+        filterData('1M', 'd');
     });
 </script>
 
