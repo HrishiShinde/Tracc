@@ -14,8 +14,9 @@ from django.conf import settings
 
 import csv
 import io
-from datetime import datetime, timedelta
 import random
+from dateutil.parser import parse
+from datetime import datetime, timedelta
 
 from .models import Profile, WeightLog, UserMilestone, WeeklySummary, Milestone
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
@@ -269,7 +270,7 @@ def import_logs(request):
             try:
                 # Parse date
                 prev_date, prev_weight = None
-                date_obj = datetime.strptime(row["Date"], "%d/%m/%y").date()
+                date_obj = parse(row["Date"]).date()
 
                 weight = float(row["Weight (kg)"]) if row["Weight (kg)"] else None
                 notes = row.get("Notes/Mood", "")

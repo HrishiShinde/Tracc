@@ -30,7 +30,7 @@ class Command(BaseCommand):
         gains = []
         logs_list = list(logs.order_by('date'))
         for i in range(1, len(logs_list)):
-            diff = logs_list[i].weight - logs_list[i-1].weight
+            diff = round(logs_list[i].weight - logs_list[i-1].weight, 2)
             if diff > 0:
                 gains.append(f"You gained {diff} kg on {logs_list[i].date.strftime('%A')}")
 
@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 continue
 
             weights = [log.weight for log in logs]
-            avg_weight = sum(weights) / len(weights)
+            avg_weight = round(sum(weights) / len(weights), 2)
 
             # find previous week’s data (for change calculation)
             prev_start = start_date - timedelta(days=7)

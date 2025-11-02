@@ -192,7 +192,7 @@ p {
     margin-top: 12px;
 }
 
-.btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
+.btn-check.line-filters:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
     border-radius: 20px !important;
     color: var(--bs-primary) !important;
     border-color: var(--bs-primary) !important;
@@ -289,10 +289,10 @@ p {
 
 .bi-award {
     background: linear-gradient(45deg, #FFD700, #FF8C00);
-    background-clip: text;              /* standard */
-    -webkit-background-clip: text;      /* for Chrome/Safari */
+    background-clip: text;
+    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: transparent;                 /* fallback */
+    color: transparent;
 }
 
 .inner-medal {
@@ -459,7 +459,8 @@ p {
 
 /* Locked icons */
 .milestone-icon.locked {
-    filter: grayscale(100%) brightness(70%);
+    filter: grayscale(100%) brightness(60%);
+    opacity: 0.6;
 }
 
 /* Unlocked icons */
@@ -478,9 +479,28 @@ p {
     filter: grayscale(100%) brightness(70%);
 }
 
+
+
+/* UNLOCKED CATEGORY COLORS */
+.inner-milestone-icon.bmi.unlocked {
+    background: linear-gradient(45deg, #7B1FA2, #CE93D8);
+}
+.inner-milestone-icon.consistency.unlocked {
+    background: linear-gradient(45deg, #0288D1, #00B0FF);
+}
+.inner-milestone-icon.streak.unlocked {
+    background: linear-gradient(45deg, #b98e01, #ffa631);
+}
+.inner-milestone-icon.target.unlocked {
+    background: linear-gradient(45deg, #af0000, #FF1744);
+}
+.inner-milestone-icon.weight_loss.unlocked {
+    background: linear-gradient(45deg, #4CAF50, #2E7D32);
+}
+
+
 /* Unlocked icons */
 .inner-milestone-icon.unlocked {
-    background: linear-gradient(45deg, #FF69B4, #8A2BE2);
     height: 31px;
     width: 30px;
     border-radius: 17px;

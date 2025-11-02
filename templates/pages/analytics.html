@@ -164,7 +164,7 @@
                                 {% for m in group.list %}
                                     <div class="milestone-icon-wrapper">
                                         <i class="bi bi-award milestone-icon {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></i>
-                                        <span class="inner-milestone-icon {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></span>
+                                        <span class="inner-milestone-icon {{ m.category }} {% if m.is_unlocked  %}unlocked{% else %}locked{% endif %}"></span>
                                         <div class="milestone-label small mt-1">{{ m.title }}</div>
                                     </div>
                                 {% endfor %}
