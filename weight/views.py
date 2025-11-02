@@ -226,7 +226,7 @@ def delete_weight_log(request, pk):
 
 # ---------- Settings ----------
 @login_required
-def settings(request):
+def settings_views(request):
     return render(request, 'pages/settings.html')
 
 

@@ -40,54 +40,60 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **kwargs):
-        today = timezone.now().date()
-        end_date = today - timedelta(days=today.weekday() + 1)  # last Sunday
-        start_date = end_date - timedelta(days=6)  # previous Monday
-        
-        self.stdout.write(f"Generating summaries for week: {start_date} → {end_date}")
+        try:
+            today = timezone.now().date()
+            end_date = today - timedelta(days=today.weekday() + 1)  # last Sunday
+            start_date = end_date - timedelta(days=6)  # previous Monday
+            
+            self.stdout.write(f"Generating summaries for week: {start_date} → {end_date}")
 
-        profiles = Profile.objects.all()
-        for profile in profiles:
-            logs = WeightLog.objects.filter(profile=profile, date__range=(start_date, end_date)).order_by('date')
-            if not logs.exists():
-                self.stdout.write(f"⏭️ Skipped {profile.user.username} — no logs found.")
-                continue
+            profiles = Profile.objects.all()
+            for profile in profiles:
+                logs = WeightLog.objects.filter(profile=profile, date__range=(start_date, end_date)).order_by('date')
+                if not logs.exists():
+                    self.stdout.write(f"⏭️ Skipped {profile.user.username} — no logs found.")
+                    continue
 
-            weights = [log.weight for log in logs]
-            avg_weight = round(sum(weights) / len(weights), 2)
+                weights = [log.weight for log in logs if log.weight]
+                if weights:
+                    avg_weight = sum(weights) / len(weights)
 
-            # find previous week’s data (for change calculation)
-            prev_start = start_date - timedelta(days=7)
-            prev_end = end_date - timedelta(days=7)
-            prev_logs = WeightLog.objects.filter(profile=profile, date__range=(prev_start, prev_end))
-            prev_avg = sum([log.weight for log in prev_logs]) / len(prev_logs) if prev_logs.exists() else avg_weight
+                    # find previous week’s data (for change calculation)
+                    prev_start = start_date - timedelta(days=7)
+                    prev_end = end_date - timedelta(days=7)
+                    prev_logs = WeightLog.objects.filter(profile=profile, date__range=(prev_start, prev_end))
+                    prev_avg = sum([log.weight for log in prev_logs]) / len(prev_logs) if prev_logs.exists() else avg_weight
 
-            weight_change = round(avg_weight - prev_avg, 2)
-            bmi = logs.last().bmi if hasattr(logs.last(), 'bmi') else None  # optional if your model has BMI
-            bmi_status = None
-            if bmi:
-                if bmi < 18.5: bmi_status = "Underweight"
-                elif 18.5 <= bmi < 24.9: bmi_status = "Normal"
-                elif 25 <= bmi < 29.9: bmi_status = "Overweight"
-                else: bmi_status = "Obese"
+                    weight_change = round(avg_weight - prev_avg, 2)
+                    bmi = logs.last().bmi if hasattr(logs.last(), 'bmi') else None  # optional if your model has BMI
+                    bmi_status = None
+                    if bmi:
+                        if bmi < 18.5: bmi_status = "Underweight"
+                        elif 18.5 <= bmi < 24.9: bmi_status = "Normal"
+                        elif 25 <= bmi < 29.9: bmi_status = "Overweight"
+                        else: bmi_status = "Obese"
 
-            # highlights
-            highlights, streak = self.generate_highlights(logs)
+                    # highlights
+                    highlights, streak = self.generate_highlights(logs)
 
-            WeeklySummary.objects.update_or_create(
-                user=profile.user,
-                week_start=start_date,
-                week_end=end_date,
-                defaults={
-                    "average_weight": avg_weight,
-                    "weight_change": weight_change,
-                    "bmi_status": bmi_status,
-                    "highlights": highlights,
-                    "streak": streak,
-                    "has_checked": False
-                }
-            )
+                    WeeklySummary.objects.update_or_create(
+                        user=profile.user,
+                        week_start=start_date,
+                        week_end=end_date,
+                        defaults={
+                            "avg_weight": avg_weight,
+                            "change_from_last_week": weight_change,
+                            "bmi_status": bmi_status,
+                            "highlights": highlights,
+                            "streak": streak,
+                            "has_checked": False
+                        }
+                    )
 
-            self.stdout.write(f"Summary generated for {profile.user.username}")
+                    self.stdout.write(f"Summary generated for {profile.user.username}")
+        except Exception as e:
+            import traceback
+            self.stdout.write(f"Error occured while generating summaries: {e}")
+            traceback.print_exc()
 
         self.stdout.write(self.style.SUCCESS("Weekly summary generation complete!"))
