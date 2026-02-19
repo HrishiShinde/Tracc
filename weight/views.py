@@ -131,11 +131,11 @@ def dashboard(request):
     bmi_data = calculate_bmi(latest_weight, profile.height_cm)
 
     # Graphs processing.
-    line_data = insights.get_line_data(recent_len)
+    line_data = insights.get_line_data(recent_len=recent_len)
     
     # latest summary for the logged-in user
-    summary = WeeklySummary.objects.filter(user=request.user, has_checked=False).order_by('-week_start').first()
     sum_line_data = {}
+    summary = WeeklySummary.objects.filter(user=request.user, has_checked=False).order_by('-week_start').first()
     if summary:
         sum_line_data = insights.get_line_data(date_range=(summary.week_start, summary.week_end))
 
@@ -357,7 +357,6 @@ def analytics(request):
     milestones = None
     if usermilestones:
         milestones = usermilestones.milestone
-
 
     # Fetch all milestones and annotate if unlocked for this user
     all_milestones = Milestone.objects.annotate(
