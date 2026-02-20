@@ -198,6 +198,7 @@ def update_all_bmis():
     total_logs = logs.count()
     print(f"ℹ️  Found {total_logs} weight logs to update.")
 
+    updated_count = 0
     for log in logs:
         height = log.profile.height_cm
         weight = log.weight
