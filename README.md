@@ -1,6 +1,6 @@
 # 🏋️‍♂️ Tracc – Your Personal Weight Tracker
 
-[👉 Try Tracc Live](https://tracc-crht.onrender.com/)
+[👉 Try Tracc Live](https://mytracc.onrender.com/)
 
 **Tracc** is a clean and intuitive weight tracking app that helps you monitor your progress, stay motivated, and build sustainable healthy habits. Whether you’re starting your fitness journey or maintaining your routine, Tracc makes it effortless, motivating, and aesthetic.  
 
