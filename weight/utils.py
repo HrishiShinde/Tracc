@@ -237,7 +237,7 @@ def update_streaks(profile=None):
 
                 if gap == 1:
                     streaks += 1
-                elif gap == 2 and prev_log.check_in_at.isoweekday() == 6:
+                elif gap == 2:  # and prev_log.check_in_at.isoweekday() == 6. For now if there's 1 day gap, the streak would be restored.
                     streaks += 1
                 else:
                     streaks = 1

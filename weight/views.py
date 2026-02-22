@@ -152,7 +152,6 @@ def dashboard(request):
     }
     return render(request, 'pages/dashboard.html', context)
 
-
 def mark_summary_checked(request, pk):
     if request.method == "POST":
         try:
@@ -163,6 +162,7 @@ def mark_summary_checked(request, pk):
         except WeeklySummary.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Not found"}, status=404)
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+
 
 # ---------- Logs ----------
 @login_required
@@ -311,6 +311,7 @@ def import_logs(request):
     messages.error(request, "No file uploaded.")
     return redirect("settings")
 
+
 # ---------- Export Logs ----------
 @login_required
 def export_logs(request):
@@ -334,6 +335,7 @@ def export_logs(request):
         ])
 
     return response
+
 
 # ---------- Analytics ----------
 @login_required
@@ -372,15 +374,28 @@ def analytics(request):
     # Calendar events.
     streak_events = []
     streak_dates = set()
+    logs_by_date = {
+        log.date.strftime("%Y-%m-%d"): log
+        for log in logs
+    }
     if profile.streaks and profile.streaks > 1 and profile.streaks_from:
+        buffer = 0
         for i in range(profile.streaks):
-            streak_day = profile.streaks_from + timedelta(days=i)
+            streak_day = profile.streaks_from + timedelta(days=i+buffer)
+
+            log = logs_by_date.get(streak_day.strftime("%Y-%m-%d"))
+            if not log or not log.weight or not log.check_in:
+                buffer += 1
+
+            streak_day = profile.streaks_from + timedelta(days=i+buffer)
+
             formatted_date = streak_day.strftime("%Y-%m-%d")
             streak_dates.add(formatted_date)
             streak_events.append({
                 "type": "streak",
                 "date": formatted_date
             })
+            buffer = 0
 
     checkin_logs = logs.filter(check_in=True)
     checkins = [
