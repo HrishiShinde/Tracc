@@ -7,14 +7,16 @@
   "theme_color": "#7F8CFF",
   "icons": [
     {
-      "src": "/static/assets/img/logo-192.ico",
+      "src": "/static/assets/img/tp-logo-192.png",
       "sizes": "192x192",
-      "type": "image/x-icon"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/static/assets/img/logo-512.ico",
+      "src": "/static/assets/img/tp-logo.png",
       "sizes": "512x512",
-      "type": "image/x-icon"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

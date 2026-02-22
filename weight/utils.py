@@ -238,7 +238,7 @@ def update_streaks(profile=None):
 
                 if gap == 1:
                     streaks += 1
-                elif gap == 2 and prev_log.check_in_at.isoweekday() == 6:
+                elif gap == 2:  # and prev_log.check_in_at.isoweekday() == 6. For now if there's 1 day gap, the streak would be restored.
                     streaks += 1
                 else:
                     streaks = 1
@@ -282,11 +282,7 @@ class Insights:
     def get_line_data(self, recent_len=None, date_range=None):
         line_data = {}
         if recent_len:
-            list_length = len(self.logs)
-            start_index = list_length - recent_len
-            start_index = max(0, start_index) 
-
-            logs = self.logs[start_index:]
+            logs = self.logs.order_by('-date')[:recent_len]
         elif date_range:
             start_date, end_date = date_range
             logs = self.logs.filter(date__range=(start_date, end_date))

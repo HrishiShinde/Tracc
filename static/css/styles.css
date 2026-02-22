@@ -3,6 +3,97 @@
     font-size: 1.5rem;
 }
 
+/* Loader CSS */
+.loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+/* Glowing dot and pulse */
+/* .brand-loader {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+.ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid var(--accent-color);
+    opacity: 0.4;
+    animation: pulse-ring 0.9s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dot {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px var(--accent-color);
+}
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.7);
+        opacity: 0.7;
+    }
+    70% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+} */
+
+/* Square Shinanigans */
+.loader {
+    width: 48px;
+    height: 48px;
+    position: relative;
+}
+.loader:before,
+.loader:after {
+    content:"";
+    display: block;
+    border: 24px solid transparent;
+    position: absolute;
+    left: 0;
+    top: 0;
+    animation: mvx 1s infinite ease-in;
+}
+.loader:before {
+    left: -1px;
+    top: 1px;
+    animation-name:mvrx;
+}
+@keyframes mvx {
+    0% , 25% {transform: translate(0 , 0) rotate(0deg)}
+    50% {transform: translate(-50% , 50%) rotate(180deg)}
+    100% {transform: translate(0% , 0%) rotate(180deg)}
+}
+@keyframes mvrx {
+    0% , 25%  {transform: translate(0 , 0) rotate(0deg)}
+    50% {transform: translate(50% , -50%) rotate(180deg)}
+    100% {transform: translate(0% , 0%) rotate(180deg)}
+}
+    
+
 #progressIndicator {
     transition: stroke-dashoffset 1.5s ease;
 }

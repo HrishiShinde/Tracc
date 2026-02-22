@@ -413,6 +413,34 @@ body {
   color: var(--text-color) !important;
 }
 
+/* =============== */
+.loader-wrapper {
+  background: color-mix(in srgb, var(--bg-color) 70%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  color: var(--bs-primary) !important;
+}
+
+/* Glowing dot and pulse */
+/* .ring {
+  border: 3px solid var(--bs-primary) !important;
+}
+.dot {
+  background: var(--bs-primary) !important;
+  box-shadow: 0 0 15px var(--bs-primary) !important;
+} */
+
+/* Square Shinanigans */
+.loader:before,
+.loader:after {
+  border-color: transparent transparent var(--bs-primary)  var(--bs-primary) !important;
+}
+.loader:before {
+  border-color:var(--bs-primary)  var(--bs-primary) transparent transparent !important;
+}
+
+
 .card {
   background-color: var(--card-color) !important;
   color: var(--text-color) !important;
@@ -561,7 +589,7 @@ body {
 ===================== 
 */
 
-/* Main Calendar Container */
+/* ====== Main Calendar Container ====== */
 .fc {
   background-color: var(--card-color) !important;
   color: var(--text-color) !important;
