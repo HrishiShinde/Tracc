@@ -1,3 +1,8 @@
+html, body {
+    height: 100%;
+    min-height: 100dvh;
+}
+
 .logo {
     font-weight: 100;
     font-size: 1.5rem;
@@ -9,7 +14,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
 
     display: flex;
     justify-content: center;
@@ -138,9 +143,11 @@ p {
 /* Bottom Navbar */
 .bottom-navbar {
     position: fixed;
-    bottom: 12px;
     left: 10px;
     right: 10px;
+
+    bottom: calc(12px + env(safe-area-inset-bottom));
+
     height: 70px;
     background-color: var(--bs-navbar-bg, rgba(255, 255, 255, 0.85)) !important;
     border-radius: 18px;
@@ -150,6 +157,7 @@ p {
     align-items: center;
     padding: 0 10px;
     width: auto !important;
+    
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
 }
