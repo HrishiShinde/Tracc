@@ -1,0 +1,234 @@
+{% extends 'layout/base.html' %}
+{% block title %}Settings | Tracc{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+
+      <!-- Header -->
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">SETTINGS</h2>
+        <p class="text-muted small">Manage identity, goals, and system behaviour.</p>
+      </div>
+
+      <div class="row g-4">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-12 col-lg-6">
+
+          <!-- Identity -->
+          <div class="p-4 border rounded-3 mb-4">
+            <h6 class="fw-bold text-uppercase mb-3">Identity</h6>
+            <p class="text-muted small mb-3">
+              Personal information used for calculations.
+            </p>
+
+            <div class="mb-2">
+              <strong>Gender:</strong> {{ profile.gender }}
+            </div>
+            <div class="mb-2">
+              <strong>Height:</strong> {{ profile.height }} cm
+            </div>
+            <div class="mb-3">
+              <strong>Date of Birth:</strong> {{ profile.dob }}
+            </div>
+
+            <a href="{% url 'update_profile' %}" class="btn btn-outline-primary btn-sm">
+              Edit Identity
+            </a>
+          </div>
+
+          <!-- Goal Strategy -->
+          <div class="p-4 border rounded-3">
+            <h6 class="fw-bold text-uppercase mb-3">Goal Strategy</h6>
+            <p class="text-muted small mb-3">
+              Define direction and measurable weekly targets.
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">Goal Type</label>
+              <select class="form-select">
+                <option>Lose Weight</option>
+                <option>Gain Weight</option>
+                <option>Maintain</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Weekly Target (kg/week)</label>
+              <input type="number" step="0.1" class="form-control" placeholder="0.5">
+              <div class="form-text">
+                Leave empty if maintaining.
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Starting Weight</label>
+              <input type="text" class="form-control" value="103 kg" disabled>
+              <div class="form-text">
+                Captured automatically on first log.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-12 col-lg-6">
+
+          <!-- Appearance -->
+          <div class="p-4 border rounded-3 mb-4">
+            <h6 class="fw-bold text-uppercase mb-3">Appearance</h6>
+            <p class="text-muted small mb-3">
+              Customize visual experience.
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">Theme</label>
+              <select class="form-select">
+                <option>Classic Clean</option>
+                <option>Obsidian</option>
+                <option>Slate</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label d-block">Mode</label>
+              <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="mode" id="light" autocomplete="off">
+                <label class="btn btn-outline-secondary" for="light">Light</label>
+
+                <input type="radio" class="btn-check" name="mode" id="dark" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary" for="dark">Dark</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Behaviour -->
+          <div class="p-4 border rounded-3 mb-4">
+            <h6 class="fw-bold text-uppercase mb-3">Behaviour</h6>
+            <p class="text-muted small mb-3">
+              Configure system reminders and preferences.
+            </p>
+
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="dailyReminder">
+              <label class="form-check-label" for="dailyReminder">
+                Daily weight reminder
+              </label>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Reminder Time</label>
+              <input type="time" class="form-control">
+            </div>
+          </div>
+
+          <!-- Data -->
+          <div class="p-4 border rounded-3 mb-4">
+            <h6 class="fw-bold text-uppercase mb-3">Data</h6>
+            <p class="text-muted small mb-3">
+              Manage logs and export records.
+            </p>
+
+            <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm me-2">
+              Export Logs
+            </a>
+
+            <button class="btn btn-outline-danger btn-sm">
+              Reset All Logs
+            </button>
+          </div>
+
+          <!-- Account -->
+          <div class="p-4 border rounded-3">
+            <h6 class="fw-bold text-uppercase mb-3">Account</h6>
+
+            <a class="btn btn-outline-danger btn-sm w-100" href="{% url 'logout' %}">
+              Logout
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // root declared in base.html.
+    const settings_root = document.documentElement;
+    const toggleBtn = document.getElementById("theme-toggle"); // navbar one
+    const themeSelect = document.getElementById("themeSelect");
+    const radioLight = document.getElementById("btnradio1");
+    const radioDark = document.getElementById("btnradio2");
+
+    // Load saved theme family + mode
+    let localFamily = localStorage.getItem("themeFamily") || "classic";
+    let localMode = localStorage.getItem("themeMode") || "light";
+
+    setTheme(localFamily, localMode);
+    themeSelect.value = localFamily;
+
+    // Handle theme select change
+    themeSelect.addEventListener("change", (e) => {
+        localFamily = e.target.value;
+        localStorage.setItem("themeFamily", localFamily);
+        setTheme(localFamily, localMode);
+    });
+
+    // Handle navbar toggle (icon button)
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+            localMode = localMode === "light" ? "dark" : "light";
+            localStorage.setItem("themeMode", localMode);
+            setTheme(localFamily, localMode);
+            updateRadio(localMode);
+        });
+    }
+
+    // Handle settings page radios
+    radioLight.addEventListener("change", () => {
+        if (radioLight.checked) {
+            localMode = "light";
+            localStorage.setItem("themeMode", localMode);
+            setTheme(localFamily, localMode);
+        }
+    });
+
+    radioDark.addEventListener("change", () => {
+        if (radioDark.checked) {
+            localMode = "dark";
+            localStorage.setItem("themeMode", localMode);
+            setTheme(localFamily, localMode);
+        }
+    });
+
+    function setTheme(family, mode) {
+        settings_root.setAttribute("data-theme-family", family);
+        settings_root.setAttribute("data-bs-theme", mode);
+
+        // update navbar toggle icon
+        if (toggleBtn) {
+            toggleBtn.innerHTML = mode === "light" 
+                ? '<i class="bi bi-moon"></i>' 
+                : '<i class="bi bi-sun"></i>';
+        }
+
+        // update settings page radios
+        updateRadio(mode);
+    }
+
+    function updateRadio(mode) {
+        if (mode === "light") {
+            radioLight.checked = true;
+            radioDark.checked = false;
+        } else {
+            radioLight.checked = false;
+            radioDark.checked = true;
+        }
+    }
+</script>
+{% endblock %}
