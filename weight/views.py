@@ -395,7 +395,6 @@ def analytics(request):
                 "type": "streak",
                 "date": formatted_date
             })
-            buffer = 0
 
     checkin_logs = logs.filter(check_in=True)
     checkins = [
