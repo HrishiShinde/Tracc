@@ -18,7 +18,7 @@ import random
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 
-from .models import Profile, WeightLog, UserMilestone, WeeklySummary, Milestone
+from .models import Profile, Settings, WeightLog, UserMilestone, WeeklySummary, Milestone
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
 
 
@@ -39,6 +39,7 @@ def register_view(request):
         
         user = User.objects.create_user(username=username, password=password)
         Profile.objects.create(user=user)
+        Settings.objects.create(user=user)
         messages.success(request, "Account created! Login now!")
         return redirect('login')
     
@@ -79,6 +80,7 @@ def redirect_after_login(request):
 @login_required
 def get_more_data(request):
     profile = request.user.profile
+    settings = request.user.settings
     is_update = request.path.endswith('update-profile/')
 
     if request.method == 'POST':
@@ -97,6 +99,10 @@ def get_more_data(request):
         # Save first weight log
         if current_weight and not is_update:
             WeightLog.objects.create(profile=profile, weight=current_weight)
+
+            # Update starting weight in settings.
+            settings.starting_weight = current_weight
+            settings.save()
 
         if is_update:
             return redirect('settings')
@@ -227,7 +233,16 @@ def delete_weight_log(request, pk):
 # ---------- Settings ----------
 @login_required
 def settings_views(request):
-    return render(request, 'pages/settings.html')
+    profile = request.user.profile
+    settings = request.user.settings if hasattr(request.user, 'settings') else None
+    if not settings:
+        settings = Settings.objects.create(user=request.user)
+
+        logs = profile.weightlog_set.exclude(weight=None).order_by('date')
+        settings.starting_weight = logs.first().weight if logs.exists() else None
+
+        settings.save()
+    return render(request, 'pages/settings.html', {'profile': profile, 'settings': settings})
 
 
 # ---------- Import Logs ----------

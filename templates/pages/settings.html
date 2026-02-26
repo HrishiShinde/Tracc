@@ -4,115 +4,282 @@
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-12 col-md-10 col-lg-8">
-            <!-- Page Header -->
+        <div class="col-12 col-lg-10">
+            <!-- Header -->
             <div class="text-center mb-5">
-                <h2 class="fw-bold">Settings</h2>
+                <h2 class="fw-bold">SETTINGS</h2>
+                <span class="text-muted">Manage identity, goals, and system behaviour.</p>
             </div>
 
-            <!-- Profile -->
-            <div class="mb-4">
-                <h5 class="fw-semibold mb-3">Profile</h5>
-                <a href="{% url 'update_profile' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-pencil"></i> Edit Profile
-                </a>
-            </div>
+            <div class="row g-4">
+                <!-- LEFT COLUMN -->
+                <div class="col-12 col-lg-6">
+                    <!-- Identity -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Identity</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">Personal information used for calculations</h6>
+                            
+                            <div class="card-text mt-5">
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label">Gender</label>
+                                    <select name="gender" id="gender" class="form-select" disabled>
+                                        <option value="" {% if not profile.gender %}selected{% endif %}>Select Gender</option>
+                                        <option value="M" {% if profile.gender == "M" %}selected{% endif %}>Male</option>
+                                        <option value="F" {% if profile.gender == "F" %}selected{% endif %}>Female</option>
+                                        <option value="O" {% if profile.gender == "O" %}selected{% endif %}>Other</option>
+                                    </select>
+                                </div>
+                                
+                                <label for="height_cm" class="form-label">Height</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" value="{{ profile.height_cm|default:'' }}"  style="width: 70%;" disabled>
+                                    <select class="form-select dropdown-menu-end" id="height-unit" disabled>
+                                        <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>cm</option>
+                                        <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft</option>
+                                    </select>
+                                </div>
 
-            <hr>
-
-            <!-- Theme Section -->
-            <div class="mb-4">
-                <h5 class="fw-semibold mb-3">Appearance</h5>
-                <div class="row g-3 align-items-center">
-
-                    <!-- Theme Select -->
-                    <div class="col-12">
-                        <label for="themeSelect" class="form-label">Theme</label>
-                        <select id="themeSelect" class="form-select theme-select">
-                            <option value="classic">Classic Clean</option>
-                            <option value="serene">Serene Teal</option>
-                            <option value="dusky">Dusky Rose</option>
-                            <option value="midnight">Midnight Mint</option>
-                            <option value="onyx-glow">Onyx Glow</option>
-                            <option value="charcoal-canary">Charcoal Canary</option>
-                            <option value="gold-ember">Gold Ember</option>
-                            <option value="sunset-noir">Sunset Noir</option>
-                        </select>
+                                <div class="mb-3">
+                                    <label for="dob" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" value="{{ profile.dob|date:'Y-m-d'|default:'' }}" disabled>
+                                </div>
+                            </div>
+                            <a href="{% url 'update_profile' %}" class="btn btn-outline-primary btn-sm w-100">
+                                Edit Identity
+                            </a>
+                        </div>
                     </div>
 
-                    <!-- Light/Dark Toggle -->
-                    <div class="col-12">
-                        <label class="form-label d-block">Mode</label>
-                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-                            <label class="btn btn-outline-primary" for="btnradio1">
-                                <i class="bi bi-sun"></i> Light
-                            </label>
+                    <!-- Goal Strategy -->
+                    <div class="card mb-sm-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Goal Strategy</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">Define direction and measurable weekly targets.</h6>
+                            
+                            <div class="card-text mt-5">
+                                <!-- Goal Type -->
+                                <div class="mb-3">
+                                    <label class="form-label">Goal Type</label>
+                                    <select class="form-select">
+                                        <option>Lose Weight</option>
+                                        <option>Gain Weight</option>
+                                        <option>Maintain</option>
+                                    </select>
+                                </div>
 
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                            <label class="btn btn-outline-primary" for="btnradio2">
-                                <i class="bi bi-moon"></i> Dark
-                            </label>
+                                <!-- Weekly Target -->
+                                <div class="mb-3">
+                                    <label class="form-label">Weekly Target (kg/week)</label>
+                                    <input type="number" step="0.1" class="form-control" placeholder="0.5">
+                                    <div class="form-text">
+                                        Leave empty if maintaining.
+                                    </div>
+                                </div>
+
+                                <!-- Starting Weight -->
+                                <label for="starting_weight" class="form-label">Starting Weight</label>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" value="{{ settings.starting_weight }}"  style="width: 70%;" disabled>
+                                    <select class="form-select dropdown-menu-end" id="weight-unit" disabled>
+                                        <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
+                                        <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
+                                    </select>
+                                </div>
+                                <div class="form-text">
+                                    Captured automatically on first log.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account -->
+                    <div class="card d-none d-lg-block mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Account</h5>
+                            <h6 class="card-subtitle mb-3 text-muted"></h6>
+
+                            <div class="card-text mt-5">
+                                <a class="btn btn-outline-danger btn-sm w-100 mb-3" href="{% url 'logout' %}">
+                                    Delete your Account
+                                </a>
+                                <a class="btn btn-outline-danger btn-sm w-100" href="{% url 'logout' %}">
+                                    Logout
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <hr>
+                <!-- RIGHT COLUMN -->
+                <div class="col-12 col-lg-6">
+                    <!-- Appearance -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Appearance</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">Customize visual experience.</h6>
+                            
+                            <div class="card-text mt-5">
+                                <div class="mb-3">
+                                    <label class="form-label">Theme</label>
+                                    <select id="themeSelect" class="form-select theme-select">
+                                        <!-- <option>Classic Clean</option>
+                                        <option>Obsidian</option>
+                                        <option>Slate</option> -->
+                                        <option value="classic">Classic Clean</option>
+                                        <option value="serene">Serene Teal</option>
+                                        <option value="dusky">Dusky Rose</option>
+                                        <option value="midnight">Midnight Mint</option>
+                                        <option value="onyx-glow">Onyx Glow</option>
+                                        <option value="charcoal-canary">Charcoal Canary</option>
+                                        <option value="gold-ember">Gold Ember</option>
+                                        <option value="sunset-noir">Sunset Noir</option>
+                                    </select>
+                                </div>
 
-            <!-- Notifications -->
-            <div class="mb-4">
-                <h5 class="fw-semibold mb-3">Notifications</h5>
-                <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" id="dailyReminder" checked>
-                <label class="form-check-label" for="dailyReminder">Daily weight reminder</label>
-                </div>
-                <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="weeklySummary">
-                <label class="form-check-label" for="weeklySummary">Weekly progress summary</label>
-                </div>
-            </div>
+                                <div>
+                                    <label class="form-label d-block">Mode</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="theme_mode" value="light" id="light" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="light">Light</label>
 
-            <hr>
-
-            <!-- Import Logs -->
-            <div class="mb-4">
-                <h5 class="fw-semibold mb-3">Import your old data</h5>
-                <form method="POST" enctype="multipart/form-data" action="{% url 'import_logs' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="csvFile" class="form-label">Upload Google Sheet CSV</label>
-                        <input class="form-control" type="file" name="csv_file" id="csvFile" accept=".csv" required>
+                                        <input type="radio" class="btn-check" name="theme_mode" value="dark" id="dark" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="dark">Dark</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-outline-success btn-sm">
-                        <i class="bi bi-upload"></i> Import Logs
-                    </button>
-                    <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm">
-                        <i class="bi bi-download"></i> Export Logs
-                    </a>
-                </form>
-            </div>
 
-            <hr>
+                    <!-- Behaviour -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Behaviour</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">Configure system reminders and measurement standards.</h6>
 
-            <!-- Account Section -->
-            <div class="mb-4">
-                <h5 class="fw-semibold mb-3">Account</h5>
-                <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
+                            <div class="card-text mt-5">
+                                <!-- Units Section -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Weight Unit</label>
+                                    <select class="form-select mb-3" name="weight_unit">
+                                        <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>
+                                            Kilograms (kg)
+                                        </option>
+                                        <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>
+                                            Pounds (lbs)
+                                        </option>
+                                    </select>
+
+                                    <label class="form-label fw-semibold">Height Unit</label>
+                                    <select class="form-select" name="height_unit">
+                                        <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>Centimeters (cm)</option>
+                                        <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>Feet & Inches (ft/in)</option>
+                                    </select>
+                                </div>
+
+                                <hr>
+
+                                <!-- Daily Reminder -->
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input"
+                                        type="checkbox"
+                                        id="dailyReminder"
+                                        name="daily_log"
+                                        {% if settings.daily_log %}checked{% endif %}>
+                                    <label class="form-check-label" for="dailyReminder">
+                                        Daily weight reminder
+                                    </label>
+                                </div>
+
+                                <!-- Reminder Time (Reactive) -->
+                                <div class="mb-3 {% if not settings.daily_log %}d-none{% endif %}" id="reminderTimeWrapper">
+                                    <label class="form-label">Reminder Time</label>
+                                    <input type="time"
+                                        class="form-control"
+                                        name="reminder_time"
+                                        value="{{ settings.reminder_time|default:'08:00:00' }}">
+                                </div>
+
+                                <!-- Weekly Summary -->
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input"
+                                        type="checkbox"
+                                        id="weeklySummary"
+                                        name="weekly_summary"
+                                        {% if settings.weekly_summary %}checked{% endif %}>
+                                    <label class="form-check-label" for="weeklySummary">
+                                        Weekly progress summary
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Data</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">Manage your data and backups.</h6>
+
+                            <div class="card-text mt-5">
+                                <form method="POST" enctype="multipart/form-data" action="{% url 'import_logs' %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="csvFile" class="form-label">Upload Google Sheet CSV</label>
+                                        <input class="form-control" type="file" name="csv_file" id="csvFile" accept=".csv" required>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-upload"></i> Import Logs
+                                        </button>
+    
+                                        <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm me-2">
+                                            <i class="bi bi-download"></i> Export Logs
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account -->
+                    <div class="card d-block d-lg-none mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Account</h5>
+                            <h6 class="card-subtitle mb-3 text-muted"></h6>
+
+                            <div class="card-text mt-5">
+                                <a class="btn btn-outline-danger btn-sm w-100 mb-3" href="{% url 'logout' %}">
+                                    Delete your Account
+                                </a>
+                                <a class="btn btn-outline-danger btn-sm w-100" href="{% url 'logout' %}">
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    const dailyToggle = document.getElementById("dailyReminder");
+    const reminderWrapper = document.getElementById("reminderTimeWrapper");
+
+    dailyToggle.addEventListener("change", function() {
+        reminderWrapper.classList.toggle("d-none", !this.checked);
+    });
+</script>
+
+<script>
     // root declared in base.html.
     const settings_root = document.documentElement;
     const toggleBtn = document.getElementById("theme-toggle"); // navbar one
     const themeSelect = document.getElementById("themeSelect");
-    const radioLight = document.getElementById("btnradio1");
-    const radioDark = document.getElementById("btnradio2");
+    const radioLight = document.getElementById("light");
+    const radioDark = document.getElementById("dark");
 
     // Load saved theme family + mode
     let localFamily = localStorage.getItem("themeFamily") || "classic";
@@ -161,8 +328,8 @@
 
         // update navbar toggle icon
         if (toggleBtn) {
-            toggleBtn.innerHTML = mode === "light" 
-                ? '<i class="bi bi-moon"></i>' 
+            toggleBtn.innerHTML = mode === "light"
+                ? '<i class="bi bi-moon"></i>'
                 : '<i class="bi bi-sun"></i>';
         }
 
