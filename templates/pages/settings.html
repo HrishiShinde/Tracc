@@ -34,7 +34,7 @@
                                 <label for="height_cm" class="form-label">Height</label>
                                 <div class="input-group mb-3">
                                     <input type="text" class="form-control" value="{{ profile.height_cm|default:'' }}"  style="width: 70%;" disabled>
-                                    <select class="form-select dropdown-menu-end" id="height-unit" disabled>
+                                    <select class="form-select dropdown-menu-end" id="identity-height-unit" disabled>
                                         <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>cm</option>
                                         <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft</option>
                                     </select>
@@ -81,7 +81,7 @@
                                 <label for="starting_weight" class="form-label">Starting Weight</label>
                                 <div class="input-group mb-2">
                                     <input type="text" class="form-control" value="{{ settings.starting_weight }}"  style="width: 70%;" disabled>
-                                    <select class="form-select dropdown-menu-end" id="weight-unit" disabled>
+                                    <select class="form-select dropdown-menu-end" id="starting-weight-unit" disabled>
                                         <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
                                         <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
                                     </select>
@@ -161,17 +161,13 @@
                                 <!-- Units Section -->
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold">Weight Unit</label>
-                                    <select class="form-select mb-3" name="weight_unit">
-                                        <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>
-                                            Kilograms (kg)
-                                        </option>
-                                        <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>
-                                            Pounds (lbs)
-                                        </option>
+                                    <select class="form-select mb-3" name="weight_unit" id="weight-unit">
+                                        <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>Kilograms (kg)</option>
+                                        <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>Pounds (lbs)</option>
                                     </select>
 
                                     <label class="form-label fw-semibold">Height Unit</label>
-                                    <select class="form-select" name="height_unit">
+                                    <select class="form-select" name="height_unit" id="height-unit">
                                         <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>Centimeters (cm)</option>
                                         <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>Feet & Inches (ft/in)</option>
                                     </select>
@@ -195,17 +191,14 @@
                                 <div class="mb-3 {% if not settings.daily_log %}d-none{% endif %}" id="reminderTimeWrapper">
                                     <label class="form-label">Reminder Time</label>
                                     <input type="time"
-                                        class="form-control"
-                                        name="reminder_time"
-                                        value="{{ settings.reminder_time|default:'08:00:00' }}">
+                                        class="form-control" name="reminder_time" id="reminder-time"
+                                        value="{{ settings.reminder_time|time:'H:i'|default:'08:00:00' }}">
                                 </div>
 
                                 <!-- Weekly Summary -->
                                 <div class="form-check form-switch mb-3">
                                     <input class="form-check-input"
-                                        type="checkbox"
-                                        id="weeklySummary"
-                                        name="weekly_summary"
+                                        type="checkbox" id="weeklySummary" name="weekly_summary"
                                         {% if settings.weekly_summary %}checked{% endif %}>
                                     <label class="form-check-label" for="weeklySummary">
                                         Weekly progress summary
@@ -271,80 +264,48 @@
     dailyToggle.addEventListener("change", function() {
         reminderWrapper.classList.toggle("d-none", !this.checked);
     });
+
+    // Weight Unit.
+    document.getElementById("weight-unit").addEventListener("change", function() {
+        let payload = {
+            "weight_unit": this.value
+        }
+        autoSaveSetting(payload);
+    });
+    
+    // Height Unit.
+    document.getElementById("height-unit").addEventListener("change", function() {
+        let payload = {
+            "height_unit": this.value
+        }
+        autoSaveSetting(payload);
+    });
+
+    // Daily Reminders.
+    document.getElementById("dailyReminder").addEventListener("change", function() {
+        let reminder = document.getElementById("reminder-time");
+        let payload = {
+            "daily_log": this.checked,
+            "reminder_time": reminder.value
+        }
+        autoSaveSetting(payload);
+    });
+    
+    // Daily Reminders.
+    document.getElementById("reminder-time").addEventListener("change", function() {
+        let payload = {
+            "reminder_time": this.value
+        }
+        autoSaveSetting(payload);
+    });
+    
+    // Weekly Summary.
+    document.getElementById("weeklySummary").addEventListener("change", function() {
+        let payload = {
+            "weekly_summary": this.checked,
+        }
+        autoSaveSetting(payload);
+    });
 </script>
 
-<script>
-    // root declared in base.html.
-    const settings_root = document.documentElement;
-    const toggleBtn = document.getElementById("theme-toggle"); // navbar one
-    const themeSelect = document.getElementById("themeSelect");
-    const radioLight = document.getElementById("light");
-    const radioDark = document.getElementById("dark");
-
-    // Load saved theme family + mode
-    let localFamily = localStorage.getItem("themeFamily") || "classic";
-    let localMode = localStorage.getItem("themeMode") || "light";
-
-    setTheme(localFamily, localMode);
-    themeSelect.value = localFamily;
-
-    // Handle theme select change
-    themeSelect.addEventListener("change", (e) => {
-        localFamily = e.target.value;
-        localStorage.setItem("themeFamily", localFamily);
-        setTheme(localFamily, localMode);
-    });
-
-    // Handle navbar toggle (icon button)
-    if (toggleBtn) {
-        toggleBtn.addEventListener("click", () => {
-            localMode = localMode === "light" ? "dark" : "light";
-            localStorage.setItem("themeMode", localMode);
-            setTheme(localFamily, localMode);
-            updateRadio(localMode);
-        });
-    }
-
-    // Handle settings page radios
-    radioLight.addEventListener("change", () => {
-        if (radioLight.checked) {
-            localMode = "light";
-            localStorage.setItem("themeMode", localMode);
-            setTheme(localFamily, localMode);
-        }
-    });
-
-    radioDark.addEventListener("change", () => {
-        if (radioDark.checked) {
-            localMode = "dark";
-            localStorage.setItem("themeMode", localMode);
-            setTheme(localFamily, localMode);
-        }
-    });
-
-    function setTheme(family, mode) {
-        settings_root.setAttribute("data-theme-family", family);
-        settings_root.setAttribute("data-bs-theme", mode);
-
-        // update navbar toggle icon
-        if (toggleBtn) {
-            toggleBtn.innerHTML = mode === "light"
-                ? '<i class="bi bi-moon"></i>'
-                : '<i class="bi bi-sun"></i>';
-        }
-
-        // update settings page radios
-        updateRadio(mode);
-    }
-
-    function updateRadio(mode) {
-        if (mode === "light") {
-            radioLight.checked = true;
-            radioDark.checked = false;
-        } else {
-            radioLight.checked = false;
-            radioDark.checked = true;
-        }
-    }
-</script>
 {% endblock %}

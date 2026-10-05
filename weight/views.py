@@ -15,6 +15,7 @@ from django.conf import settings
 import csv
 import io
 import random
+import json
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 
@@ -233,16 +234,38 @@ def delete_weight_log(request, pk):
 # ---------- Settings ----------
 @login_required
 def settings_views(request):
-    profile = request.user.profile
-    settings = request.user.settings if hasattr(request.user, 'settings') else None
-    if not settings:
-        settings = Settings.objects.create(user=request.user)
+    if request.method == "GET":
+        profile = request.user.profile
+        settings = request.user.settings if hasattr(request.user, 'settings') else None
+        if not settings:
+            settings = Settings.objects.create(user=request.user)
 
-        logs = profile.weightlog_set.exclude(weight=None).order_by('date')
-        settings.starting_weight = logs.first().weight if logs.exists() else None
+            logs = profile.weightlog_set.exclude(weight=None).order_by('date')
+            settings.starting_weight = logs.first().weight if logs.exists() else None
 
+            settings.save()
+
+        return render(request, 'pages/settings.html', {'profile': profile, 'settings': settings})
+
+    if request.method == "PUT":
+        allowed_fields = [
+            "height_unit",
+            "weight_unit",
+            "daily_log",
+            "reminder_time",
+            "weekly_summary",
+        ]
+        settings = request.user.settings  # adjust if relation differs
+        data = json.loads(request.body)
+
+        for field, value in data.items():
+            if field not in allowed_fields:
+                return JsonResponse({"error": f"Invalid field: {field}"}, status=400)
+
+            setattr(settings, field, value)
         settings.save()
-    return render(request, 'pages/settings.html', {'profile': profile, 'settings': settings})
+
+        return JsonResponse({"success": True})
 
 
 # ---------- Import Logs ----------

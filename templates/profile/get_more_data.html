@@ -25,19 +25,39 @@
                     <option value="O" {% if profile.gender == "O" %}selected{% endif %}>Other</option>
                 </select>
             </div>
-                                            
+
             <label for="height_cm" class="form-label">Height</label>
             <div class="input-group mb-3">
+                <!-- CM Input -->
                 <input 
-                    type="number" name="height_cm" class="form-control" id="height_cm" 
-                    value="{{ profile.height_cm|default:'' }}"  style="width: 70%;" required
+                    type="number" step="0.1" name="height_cm" id="height_cm"
+                    class="form-control" value="{{ profile.height_cm|default:'' }}"
+                    style="width: 70%;" required
                 >
-                <select class="form-select dropdown-menu-end" id="height-unit">
+
+                <!-- Feet -->
+                <input 
+                    type="number" id="height_ft"
+                    class="form-control d-none"
+                    placeholder="ft" min="0" 
+                    style="width: 31%;" 
+                >
+
+                <!-- Inches -->
+                <input 
+                    type="number" id="height_in"
+                    class="form-control d-none"
+                    placeholder="in" min="0"
+                    max="11" style="width: 31%;" 
+                >
+
+                <select class="form-select" id="height-unit">
                     <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>cm</option>
-                    <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft</option>
+                    <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft/in</option>
                 </select>
             </div>
 
+            {{ is_update | json_script:"is_update" }}
             {% if not is_update %}
             <label for="current_weight" class="form-label">Current Weight</label>
             <div class="input-group mb-3">
@@ -45,7 +65,7 @@
                     type="number" step="0.1" name="current_weight" class="form-control" id="current_weight"
                     value="{{ profile.current_weight|default:'' }}"  style="width: 70%;" required
                 >
-                <select class="form-select dropdown-menu-end" id="weight-unit">
+                <select class="form-select dropdown-menu-end" id="current-weight-unit">
                     <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
                     <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
                 </select>
@@ -58,7 +78,7 @@
                     type="number" step="0.1" name="target_weight" class="form-control" id="target_weight" 
                     value="{{ profile.target_weight|default:'' }}" style="width: 70%;" required
                 >
-                <select class="form-select dropdown-menu-end" id="weight-unit">
+                <select class="form-select dropdown-menu-end" id="target-weight-unit">
                     <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
                     <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
                 </select>
@@ -74,4 +94,140 @@
         </form>
     </div>
 </div>
+
+<script>
+    // CONSTANTS
+    const KG_TO_LBS = 2.20462;
+    const LBS_TO_KG = 1 / KG_TO_LBS;
+
+    const CM_TO_FT = 0.0328084;
+    const FT_TO_CM = 30.48;
+
+    // HEIGHT CONVERSION (cm <-> ft + in)
+    const heightCmInput = document.getElementById("height_cm");
+    const heightFtInput = document.getElementById("height_ft");
+    const heightInInput = document.getElementById("height_in");
+    const heightUnitSelect = document.getElementById("height-unit");
+
+    function cmToFtIn(cm) {
+        const totalInches = cm / 2.54;
+
+        let ft = Math.floor(totalInches / 12);
+        let inches = Math.round(totalInches - (ft * 12));
+
+        if (inches === 12) {
+            ft += 1;
+            inches = 0;
+        }
+
+        return { ft, inches };
+    }
+
+    function ftInToCm(ft, inches) {
+        return (ft * 30.48) + (inches * 2.54);
+    }
+
+    function switchHeightMode() {
+        if (heightUnitSelect.value === "ft") {
+
+            // Convert cm → ft/in
+            if (heightCmInput.value) {
+                const result = cmToFtIn(parseFloat(heightCmInput.value));
+                heightFtInput.value = result.ft;
+                heightInInput.value = result.inches;
+            }
+
+            heightCmInput.classList.add("d-none");
+            heightFtInput.classList.remove("d-none");
+            heightInInput.classList.remove("d-none");
+
+        } else {
+
+            // Convert ft/in → cm
+            if (heightFtInput.value || heightInInput.value) {
+                heightCmInput.value = ftInToCm(
+                    parseInt(heightFtInput.value || 0),
+                    parseInt(heightInInput.value || 0)
+                ).toFixed(1);
+            }
+
+            heightCmInput.classList.remove("d-none");
+            heightFtInput.classList.add("d-none");
+            heightInInput.classList.add("d-none");
+        }
+    }
+
+    heightUnitSelect.addEventListener("change", switchHeightMode);
+    heightInInput.addEventListener("input", function() {
+        if (this.value > 11) {
+            const extraFeet = Math.floor(this.value / 12);
+            this.value = this.value % 12;
+            heightFtInput.value = parseInt(heightFtInput.value || 0) + extraFeet;
+        }
+    });
+
+    // On page load
+    document.addEventListener("DOMContentLoaded", switchHeightMode);
+
+    // Convert BEFORE submit → always store cm
+    function normalizeHeightBeforeSubmit() {
+        if (heightUnitSelect.value === "ft") {
+            heightCmInput.value = ftInToCm(
+                parseInt(heightFtInput.value || 0),
+                parseInt(heightInInput.value || 0)
+            ).toFixed(1);
+        }
+    }
+
+    // WEIGHT CONVERSION
+    function attachWeightConversion(inputId, unitSelectId) {
+        const weightInput = document.getElementById(inputId);
+        const unitSelect = document.getElementById(unitSelectId);
+
+        function convertDisplay() {
+            let value = parseFloat(weightInput.value);
+            if (!value) return;
+
+            if (unitSelect.value === "lbs") {
+                // kg -> lbs
+                weightInput.value = (value * KG_TO_LBS).toFixed(1);
+            } else {
+                // lbs -> kg
+                weightInput.value = (value * LBS_TO_KG).toFixed(1);
+            }
+        }
+
+        function normalizeBeforeSubmit() {
+            let value = parseFloat(weightInput.value);
+            if (!value) return;
+
+            if (unitSelect.value === "lbs") {
+                weightInput.value = (value * LBS_TO_KG).toFixed(1);
+            }
+        }
+
+        unitSelect.addEventListener("change", convertDisplay);
+
+        return normalizeBeforeSubmit;
+    }
+
+
+    // INIT
+    const is_update = document.getElementById("is_update");
+    let normalizeCurrentWeight = () => {};
+
+    if (!is_update) {
+        normalizeCurrentWeight = attachWeightConversion("current_weight", "current-weight-unit");
+    }
+
+    const normalizeTargetWeight = attachWeightConversion("target_weight", "target-weight-unit");
+
+    // FORM SUBMIT
+    document.querySelector("form").addEventListener("submit", function() {
+        normalizeHeightBeforeSubmit();
+        normalizeCurrentWeight();
+        normalizeTargetWeight();
+    });
+</script>
+
 {% endblock %}
