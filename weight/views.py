@@ -134,14 +134,15 @@ def dashboard(request):
     # Recent and Latest.
     recent_len = 5
     recent_logs = logs.order_by('-date')[:recent_len]
-    latest_weight = logs.last().weight
+    latest_log = logs.last()
+    latest_weight = latest_log.weight if latest_log else None
 
     # Call Insights class.
     insights = Insights(logs)
 
     # BMI and Progress.
     progress, progress_offset = insights.get_progress(profile)
-    bmi_data = calculate_bmi(latest_weight, profile.height_cm)
+    bmi_data = calculate_bmi(latest_weight, profile.height_cm) if latest_weight and profile.height_cm else {}
 
     # Graphs processing.
     line_data = insights.get_line_data(recent_len=recent_len)
@@ -154,6 +155,7 @@ def dashboard(request):
 
     context = {
         'profile': profile,
+        'current_weight': latest_weight,
         'recent_logs': recent_logs, 
         'bmi_data': bmi_data,
         'progress': progress,
@@ -165,15 +167,13 @@ def dashboard(request):
     }
     return render(request, 'pages/dashboard.html', context)
 
+@login_required
 def mark_summary_checked(request, pk):
     if request.method == "POST":
-        try:
-            summary = WeeklySummary.objects.get(pk=pk)
-            summary.has_checked = True
-            summary.save()
-            return JsonResponse({"status": "success"})
-        except WeeklySummary.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "Not found"}, status=404)
+        summary = get_object_or_404(WeeklySummary, pk=pk, user=request.user)
+        summary.has_checked = True
+        summary.save(update_fields=["has_checked"])
+        return JsonResponse({"status": "success"})
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 

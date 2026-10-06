@@ -110,7 +110,7 @@
         <!-- Weekly Summary Trigger Card -->
         {% if summary and not summary.has_checked %}
         <div 
-            class="summary-card mb-5"
+            class="summary-card dashboard-summary-card mb-5"
             data-bs-toggle="modal" 
             data-bs-target="#summaryModal"
             onclick="markChecked()"
@@ -161,11 +161,10 @@
             .then(response => response.json())
             .then(data => {
                 if(data.status === "success"){
-                    console.log("Marked as checked");
-                    // optional: hide the card immediately
-                    // document.querySelector('.summary-card').style.display = 'none';
+                    document.querySelector('.dashboard-summary-card')?.remove();
                 }
-            });
+            })
+            .catch(error => console.error("Could not mark weekly summary as viewed:", error));
         }
         document.addEventListener("DOMContentLoaded", () => {
             // Clock in time localization.
@@ -208,8 +207,8 @@
             const lineData = JSON.parse(document.getElementById('line-data').textContent);
 
             let weights = lineData.weights || [];
-            let minWeight = Math.min(...weights);
-            let maxWeight = Math.max(...weights);
+            let minWeight = weights.length ? Math.min(...weights) : 0;
+            let maxWeight = weights.length ? Math.max(...weights) : 0;
 
             new Chart(progress_ctx, {
                 type: 'line',
@@ -232,9 +231,9 @@
                                 text: 'Date'
                             },
                             ticks: {
-                                autoSkip: true,
+                                autoSkip: false,
                                 maxRotation: 45,
-                                minRotation: 0
+                                minRotation: 45
                             }
                         },
                         y: {

@@ -280,9 +280,15 @@ class Insights:
         return progress, progress_offset
 
     def get_line_data(self, recent_len=None, date_range=None):
-        line_data = {}
         if recent_len:
-            logs = self.logs.order_by('-date')[:recent_len]
+            # Recent-log charts should plot actual entries only. Reindexing these
+            # dates to a daily range makes a five-entry chart show many empty days.
+            recent_logs = list(self.logs.order_by('-date')[:recent_len])
+            recent_logs.reverse()
+            return {
+                "labels": [log.date.strftime('%d-%m-%Y') for log in recent_logs],
+                "weights": [log.weight for log in recent_logs],
+            }
         elif date_range:
             start_date, end_date = date_range
             logs = self.logs.filter(date__range=(start_date, end_date))
@@ -290,7 +296,7 @@ class Insights:
             logs = self.logs
 
         if not logs:
-            return line_data
+            return {"labels": [], "weights": []}
 
         # Convert to DataFrame
         data = {
