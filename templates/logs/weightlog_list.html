@@ -18,7 +18,7 @@
                 <div class="col-11" data-bs-toggle="modal" data-bs-target="#addEditModal" 
                     onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
                 >
-                    <strong>{{ log.date }}</strong> - {{ log.weight }} kg
+                    <strong>{{ log.date }}</strong> - <span data-weight-kg="{{ log.weight }}">{{ log.weight }}</span> <span class="weight-unit-label">kg</span>
                     <br>
                     {% if log.notes %}{{ log.notes }}{% endif %}
                 </div>
@@ -86,7 +86,7 @@
 function openEditModal(id, weight, notes) {
     document.getElementById('modalTitle').innerText = "Edit Weight Log";
     document.getElementById('addEditForm').action = `/logs/${id}/edit/`;
-    document.getElementById('modalWeight').value = weight;
+    document.getElementById('modalWeight').value = window.displayWeightValue ? window.displayWeightValue(weight) : weight;
     document.getElementById('modalNotes').value = notes;
 }
 

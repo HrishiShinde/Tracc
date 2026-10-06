@@ -29,8 +29,34 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet">
+    <style>
+        .app-alerts { position: fixed; z-index: 1090; inset: 1rem 1rem auto auto; width: min(24rem, calc(100vw - 2rem)); display: grid; gap: .65rem; }
+        .app-alert { color: var(--bs-body-color); background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-left: .3rem solid var(--bs-primary); border-radius: .8rem; padding: .85rem 1rem; box-shadow: 0 .75rem 2rem #0003; animation: app-alert-in .18s ease-out; }
+        .app-alert[data-variant="success"] { border-left-color: var(--bs-success); }
+        .app-alert[data-variant="warning"] { border-left-color: var(--bs-warning); }
+        .app-alert[data-variant="error"] { border-left-color: var(--bs-danger); }
+        .app-alert button { color: inherit; background: transparent; border: 0; font-size: 1.25rem; line-height: 1; opacity: .7; }
+        #app-confirm-dialog { color: var(--bs-body-color); background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 1rem; width: min(28rem, calc(100vw - 2rem)); padding: 0; box-shadow: 0 1.5rem 4rem #0006; }
+        #app-confirm-dialog::backdrop { background: #0008; backdrop-filter: blur(3px); }
+        .app-confirm-content { padding: 1.4rem; }
+        .app-confirm-content h2 { font-size: 1.2rem; margin: 0 0 .65rem; }
+        .app-confirm-content p { color: var(--bs-secondary-color); white-space: pre-line; margin-bottom: 1.25rem; }
+        @keyframes app-alert-in { from { opacity: 0; transform: translateY(-.4rem); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { .app-alert { animation: none; } }
+    </style>
 </head>
 <body>
+    <div id="app-alerts" class="app-alerts" aria-live="polite" aria-atomic="false"></div>
+    <dialog id="app-confirm-dialog" aria-labelledby="app-confirm-title" aria-describedby="app-confirm-message">
+        <div class="app-confirm-content">
+            <h2 id="app-confirm-title">Please confirm</h2>
+            <p id="app-confirm-message"></p>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary" id="app-confirm-cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="app-confirm-accept">Continue</button>
+            </div>
+        </div>
+    </dialog>
     <!-- Loader -->
     <div id="page-loader" class="loader-wrapper">
         <!-- Glowing dot and pulse -->
@@ -77,7 +103,7 @@
         <!-- Django messages -->
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-app-message>
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -144,7 +170,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="modalWeight" class="form-label">Weight (kg)</label>
+                            <label for="modalWeight" class="form-label">Weight (<span class="weight-unit-label">kg</span>)</label>
                             <input type="number" step="0.1" name="weight" class="form-control" id="modalWeight" required>
                         </div>
                         <div class="mb-3">
@@ -254,6 +280,26 @@
 
     <script src="{% static 'js/themes.js' %}"></script>
     <script src="{% static 'js/ajax.js' %}"></script>
+    <script>
+        (() => {
+            const unitNode = document.getElementById('global-weight-unit');
+            if (!unitNode) return;
+            const unit = JSON.parse(unitNode.textContent) === 'lbs' ? 'lbs' : 'kg';
+            document.querySelectorAll('[data-weight-kg]').forEach(el => {
+                const value = Number(el.dataset.weightKg);
+                if (Number.isFinite(value)) el.textContent = (unit === 'lbs' ? value * 2.20462 : value).toFixed(1);
+            });
+            document.querySelectorAll('.weight-unit-label').forEach(el => el.textContent = unit);
+            const weightInput = document.getElementById('modalWeight');
+            if (weightInput) {
+                const modalForm = document.getElementById('addEditForm');
+                modalForm.addEventListener('submit', () => {
+                    if (unit === 'lbs' && weightInput.value) weightInput.value = (Number(weightInput.value) / 2.20462).toFixed(2);
+                });
+                window.displayWeightValue = value => unit === 'lbs' ? (Number(value) * 2.20462).toFixed(1) : value;
+            }
+        })();
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.js"></script> -->
@@ -261,6 +307,55 @@
     
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        window.appAlert = function(message, {variant = 'info', duration = 5000} = {}) {
+            const region = document.getElementById('app-alerts');
+            const item = document.createElement('div');
+            item.className = 'app-alert d-flex align-items-start justify-content-between gap-3';
+            item.dataset.variant = variant;
+            item.setAttribute('role', variant === 'error' ? 'alert' : 'status');
+            const text = document.createElement('span');
+            text.textContent = message;
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.setAttribute('aria-label', 'Dismiss notification');
+            close.innerHTML = '&times;';
+            close.addEventListener('click', () => item.remove());
+            item.append(text, close);
+            region.append(item);
+            if (duration > 0) window.setTimeout(() => item.remove(), duration);
+        };
+
+        window.appConfirm = function(message, {title = 'Please confirm', confirmLabel = 'Continue', danger = false} = {}) {
+            const dialog = document.getElementById('app-confirm-dialog');
+            const cancel = document.getElementById('app-confirm-cancel');
+            const accept = document.getElementById('app-confirm-accept');
+            document.getElementById('app-confirm-title').textContent = title;
+            document.getElementById('app-confirm-message').textContent = message;
+            accept.textContent = confirmLabel;
+            accept.className = danger ? 'btn btn-danger' : 'btn btn-primary';
+            return new Promise(resolve => {
+                const finish = value => { dialog.close(); resolve(value); };
+                cancel.onclick = () => finish(false);
+                accept.onclick = () => finish(true);
+                dialog.oncancel = event => { event.preventDefault(); finish(false); };
+                dialog.onclick = event => { if (event.target === dialog) finish(false); };
+                dialog.showModal();
+                cancel.focus();
+            });
+        };
+
+        document.querySelectorAll('[data-app-message]').forEach(item => {
+            const variant = item.classList.contains('alert-success') ? 'success'
+                : item.classList.contains('alert-warning') ? 'warning'
+                : item.classList.contains('alert-danger') || item.classList.contains('alert-error') ? 'error' : 'info';
+            const message = item.cloneNode(true);
+            message.querySelectorAll('button').forEach(button => button.remove());
+            window.appAlert(message.textContent.trim(), {variant});
+            item.remove();
+        });
+    </script>
 
     <!-- Loader Script -->
     <script>
@@ -273,6 +368,13 @@
                 setTimeout(() => {
                     loader.style.display = "none";
                 }, 300);
+            });
+
+            // Browsers may restore the prior page from the back-forward cache,
+            // including its visible loader overlay.
+            window.addEventListener("pageshow", function () {
+                loader.style.opacity = "0";
+                loader.style.display = "none";
             });
 
             function shouldIgnoreLink(link) {

@@ -26,6 +26,8 @@ urlpatterns = [
 
     # Settings
     path('settings/', views.settings_views, name='settings'),
+    path('settings/reset-data/', views.reset_user_data, name='reset_user_data'),
+    path('settings/delete-account/', views.delete_account, name='delete_account'),
     path("import-logs/", views.import_logs, name="import_logs"),
     path("export-logs/", views.export_logs, name="export_logs"),
 

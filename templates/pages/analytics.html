@@ -200,7 +200,7 @@
                 right: 'next'
             },
             dateClick: function(info) {
-                alert('Date clicked: ' + info.dateStr);
+                window.appAlert('Selected date: ' + info.dateStr);
             },
             events: events.map(ev => ({
                 start: ev.date,

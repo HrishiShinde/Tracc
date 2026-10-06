@@ -66,7 +66,7 @@
                     value="{{ profile.current_weight|default:'' }}"  style="width: 70%;" required
                 >
                 <select class="form-select dropdown-menu-end" id="current-weight-unit">
-                    <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
+                    <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>kg</option>
                     <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
                 </select>
             </div>
@@ -79,7 +79,7 @@
                     value="{{ profile.target_weight|default:'' }}" style="width: 70%;" required
                 >
                 <select class="form-select dropdown-menu-end" id="target-weight-unit">
-                    <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
+                    <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>kg</option>
                     <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
                 </select>
             </div>
@@ -184,29 +184,25 @@
         const weightInput = document.getElementById(inputId);
         const unitSelect = document.getElementById(unitSelectId);
 
+        let displayedUnit = "kg"; // Profile values are stored in kg.
         function convertDisplay() {
             let value = parseFloat(weightInput.value);
-            if (!value) return;
+            if (!Number.isFinite(value)) return;
 
-            if (unitSelect.value === "lbs") {
-                // kg -> lbs
-                weightInput.value = (value * KG_TO_LBS).toFixed(1);
-            } else {
-                // lbs -> kg
-                weightInput.value = (value * LBS_TO_KG).toFixed(1);
-            }
+            if (displayedUnit === unitSelect.value) return;
+            weightInput.value = (unitSelect.value === "lbs" ? value * KG_TO_LBS : value * LBS_TO_KG).toFixed(1);
+            displayedUnit = unitSelect.value;
         }
 
         function normalizeBeforeSubmit() {
             let value = parseFloat(weightInput.value);
-            if (!value) return;
+            if (!Number.isFinite(value)) return;
 
-            if (unitSelect.value === "lbs") {
-                weightInput.value = (value * LBS_TO_KG).toFixed(1);
-            }
+            if (unitSelect.value === "lbs") weightInput.value = (value * LBS_TO_KG).toFixed(1);
         }
 
         unitSelect.addEventListener("change", convertDisplay);
+        if (unitSelect.value !== displayedUnit) convertDisplay();
 
         return normalizeBeforeSubmit;
     }

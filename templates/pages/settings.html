@@ -8,7 +8,8 @@
             <!-- Header -->
             <div class="text-center mb-5">
                 <h2 class="fw-bold">SETTINGS</h2>
-                <span class="text-muted">Manage identity, goals, and system behaviour.</p>
+                <span class="text-muted">Manage identity, goals, and system behaviour.</span>
+                <div id="settings-save-status" class="small text-muted mt-2" role="status" aria-live="polite"></div>
             </div>
 
             <div class="row g-4">
@@ -33,7 +34,7 @@
                                 
                                 <label for="height_cm" class="form-label">Height</label>
                                 <div class="input-group mb-3">
-                                    <input type="text" class="form-control" value="{{ profile.height_cm|default:'' }}"  style="width: 70%;" disabled>
+                                    <input type="text" class="form-control" value="{{ profile.height_cm|default:'' }}" data-height-cm="{{ profile.height_cm|default:'' }}" style="width: 70%;" disabled>
                                     <select class="form-select dropdown-menu-end" id="identity-height-unit" disabled>
                                         <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>cm</option>
                                         <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft</option>
@@ -61,28 +62,24 @@
                                 <!-- Goal Type -->
                                 <div class="mb-3">
                                     <label class="form-label">Goal Type</label>
-                                    <select class="form-select">
-                                        <option>Lose Weight</option>
-                                        <option>Gain Weight</option>
-                                        <option>Maintain</option>
+                                    <select class="form-select" id="goal-type">
+                                        {% for value, label in goal_choices %}<option value="{{ value }}" {% if settings.goal_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
                                     </select>
                                 </div>
 
                                 <!-- Weekly Target -->
                                 <div class="mb-3">
-                                    <label class="form-label">Weekly Target (kg/week)</label>
-                                    <input type="number" step="0.1" class="form-control" placeholder="0.5">
-                                    <div class="form-text">
-                                        Leave empty if maintaining.
-                                    </div>
+                                    <label class="form-label" for="weekly-goal-rate">Weekly Target (<span id="goal-rate-unit">{{ settings.weight_unit }}</span>/week)</label>
+                                    <input type="number" min="0.1" max="2" step="0.1" id="weekly-goal-rate" class="form-control" value="{{ settings.weekly_goal_rate|default_if_none:'' }}">
+                                    <div class="form-text" id="goal-rate-help">Suggested: <span id="goal-rate-suggestion">{% if settings.weight_unit == 'lbs' %}1.1{% else %}0.5{% endif %}</span> <span id="goal-rate-help-unit">{{ settings.weight_unit }}</span>/week. Edit to suit your goal.</div>
                                 </div>
 
                                 <!-- Starting Weight -->
                                 <label for="starting_weight" class="form-label">Starting Weight</label>
                                 <div class="input-group mb-2">
-                                    <input type="text" class="form-control" value="{{ settings.starting_weight }}"  style="width: 70%;" disabled>
+                                    <input type="text" class="form-control" value="{{ settings.starting_weight }}" data-starting-weight-kg="{{ settings.starting_weight|default:'' }}" style="width: 70%;" disabled>
                                     <select class="form-select dropdown-menu-end" id="starting-weight-unit" disabled>
-                                        <option value="kgs" {% if settings.weight_unit == "kgs" %}selected{% endif %}>kgs</option>
+                                        <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>kg</option>
                                         <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
                                     </select>
                                 </div>
@@ -97,16 +94,13 @@
                     <div class="card d-none d-lg-block mb-4">
                         <div class="card-body">
                             <h5 class="card-title">Account</h5>
-                            <h6 class="card-subtitle mb-3 text-muted"></h6>
-
-                            <div class="card-text mt-5">
-                                <a class="btn btn-outline-danger btn-sm w-100 mb-3" href="{% url 'logout' %}">
-                                    Delete your Account
-                                </a>
-                                <a class="btn btn-outline-danger btn-sm w-100" href="{% url 'logout' %}">
-                                    Logout
-                                </a>
+                            <h6 class="card-subtitle mb-3 text-muted">Manage your account and stored progress.</h6>
+                            <div class="d-flex gap-2 mb-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm flex-fill" id="reset-data-desktop" data-account-action="reset">Reset data</button>
+                                <button type="button" class="btn btn-danger btn-sm flex-fill" id="delete-account-desktop" data-account-action="delete">Delete account</button>
                             </div>
+                            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'logout' %}">Logout</a>
+                            <div class="small mt-2" id="reset-status" data-reset-status role="status"></div>
                         </div>
                     </div>
                 </div>
@@ -234,23 +228,21 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Account -->
-                    <div class="card d-block d-lg-none mb-4">
+
+                    <!-- Account sits at the end of the page on small screens. -->
+                    <div class="card d-lg-none mb-4">
                         <div class="card-body">
                             <h5 class="card-title">Account</h5>
-                            <h6 class="card-subtitle mb-3 text-muted"></h6>
-
-                            <div class="card-text mt-5">
-                                <a class="btn btn-outline-danger btn-sm w-100 mb-3" href="{% url 'logout' %}">
-                                    Delete your Account
-                                </a>
-                                <a class="btn btn-outline-danger btn-sm w-100" href="{% url 'logout' %}">
-                                    Logout
-                                </a>
+                            <h6 class="card-subtitle mb-3 text-muted">Manage your account and stored progress.</h6>
+                            <div class="d-flex gap-2 mb-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm flex-fill" id="reset-data-mobile" data-account-action="reset">Reset data</button>
+                                <button type="button" class="btn btn-danger btn-sm flex-fill" id="delete-account-mobile" data-account-action="delete">Delete account</button>
                             </div>
+                            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'logout' %}">Logout</a>
+                            <div class="small mt-2" data-reset-status role="status"></div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -258,6 +250,28 @@
 </div>
 
 <script>
+    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    const goalType = document.getElementById('goal-type');
+    const goalRate = document.getElementById('weekly-goal-rate');
+    const goalRateHelp = document.getElementById('goal-rate-help');
+    const suggestion = document.getElementById('goal-rate-suggestion');
+    function syncGoalRate() {
+        const maintaining = goalType.value === 'maintain';
+        goalRate.disabled = maintaining;
+        goalRateHelp.classList.toggle('d-none', maintaining);
+        if (maintaining) goalRate.value = '';
+    }
+    if (goalType.value !== 'maintain' && !goalRate.value) goalRate.value = suggestion.textContent;
+    goalType.addEventListener('change', function() {
+        syncGoalRate();
+        autoSaveSetting({goal_type: this.value, weekly_goal_rate: this.value === 'maintain' ? null : (goalRate.value || suggestion.textContent)});
+        if (this.value !== 'maintain' && !goalRate.value) goalRate.value = suggestion.textContent;
+    });
+    goalRate.addEventListener('change', function() {
+        if (Number(this.value) > 0 && Number(this.value) <= 2) autoSaveSetting({weekly_goal_rate: this.value});
+    });
+    syncGoalRate();
+
     const dailyToggle = document.getElementById("dailyReminder");
     const reminderWrapper = document.getElementById("reminderTimeWrapper");
 
@@ -265,16 +279,42 @@
         reminderWrapper.classList.toggle("d-none", !this.checked);
     });
 
+    function updateProfileUnitDisplays(weightUnit, heightUnit) {
+        const factor = weightUnit === 'lbs' ? 2.20462 : 1;
+        const suffix = weightUnit === 'lbs' ? 'lbs' : 'kg';
+        document.querySelectorAll('[data-starting-weight-kg]').forEach(el => {
+            const raw = parseFloat(el.dataset.startingWeightKg);
+            el.value = Number.isFinite(raw) ? (raw * factor).toFixed(1) : '';
+        });
+        const startUnit = document.getElementById('starting-weight-unit');
+        if (startUnit) startUnit.value = suffix;
+        const height = document.querySelector('[data-height-cm]');
+        if (height) {
+            const cm = parseFloat(height.dataset.heightCm);
+            height.value = Number.isFinite(cm) ? (heightUnit === 'ft' ? `${Math.floor(cm / 30.48)} ft ${(cm / 2.54 % 12).toFixed(1)} in` : `${cm.toFixed(1)} cm`) : '';
+        }
+        const identityUnit = document.getElementById('identity-height-unit');
+        if (identityUnit) identityUnit.value = heightUnit;
+    }
+    updateProfileUnitDisplays(document.getElementById('weight-unit').value, document.getElementById('height-unit').value);
+
     // Weight Unit.
     document.getElementById("weight-unit").addEventListener("change", function() {
+        updateProfileUnitDisplays(this.value, document.getElementById('height-unit').value);
+        document.getElementById('goal-rate-unit').textContent = this.value;
+        document.getElementById('goal-rate-help-unit').textContent = this.value;
+        suggestion.textContent = this.value === 'lbs' ? '1.1' : '0.5';
+        if (goalType.value !== 'maintain') goalRate.value = suggestion.textContent;
         let payload = {
-            "weight_unit": this.value
+            "weight_unit": this.value,
+            ...(goalType.value !== 'maintain' ? {"weekly_goal_rate": goalRate.value} : {})
         }
         autoSaveSetting(payload);
     });
     
     // Height Unit.
     document.getElementById("height-unit").addEventListener("change", function() {
+        updateProfileUnitDisplays(document.getElementById('weight-unit').value, this.value);
         let payload = {
             "height_unit": this.value
         }
@@ -305,6 +345,41 @@
             "weekly_summary": this.checked,
         }
         autoSaveSetting(payload);
+    });
+
+    async function postAccountAction(url) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {'X-CSRFToken': decodeURIComponent(csrfToken || ''), 'X-Requested-With': 'XMLHttpRequest'}
+        });
+    }
+
+    document.querySelectorAll('[data-account-action]').forEach(button => {
+        button.addEventListener('click', async function() {
+            const status = this.closest('.card-body').querySelector('[data-reset-status]');
+            const deletingAccount = this.dataset.accountAction === 'delete';
+            const confirmed = deletingAccount
+                ? await window.appConfirm('Permanently delete your account and all associated data? You will not be able to sign in again.', {title: 'Delete your account?', confirmLabel: 'Delete account', danger: true})
+                : await window.appConfirm('Permanently delete all weight logs, milestones, weekly summaries, and streak progress? Your account and profile will remain.', {title: 'Reset your data?', confirmLabel: 'Reset data', danger: true});
+            if (!confirmed) return;
+            this.disabled = true;
+            try {
+                const endpoint = deletingAccount ? '{% url "delete_account" %}' : '{% url "reset_user_data" %}';
+                const response = await postAccountAction(endpoint);
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.error || (deletingAccount ? 'Could not delete account.' : 'Could not reset data.'));
+                if (deletingAccount) {
+                    window.location.href = '{% url "login" %}';
+                    return;
+                }
+                status.textContent = 'Your logs and progress have been deleted.';
+                window.appAlert('Your logs and progress have been deleted.', {variant: 'success'});
+            } catch (error) {
+                status.textContent = error.message;
+                window.appAlert(error.message, {variant: 'error'});
+                this.disabled = false;
+            }
+        });
     });
 </script>
 

@@ -16,6 +16,8 @@ function getCookie(name) {
 const csrftoken = getCookie("csrftoken");
 
 function autoSaveSetting(payload) {
+    const saveStatus = document.getElementById("settings-save-status");
+    if (saveStatus) saveStatus.textContent = "Saving…";
     fetch("/settings/", {
         method: "PUT",
         headers: {
@@ -24,13 +26,18 @@ function autoSaveSetting(payload) {
         },
         body: JSON.stringify(payload)
     })
-    .then(res => res.json())
+    .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not save setting.");
+        return data;
+    })
     .then(data => {
         if (data.success) {
-            console.log("Saved:", Object.keys(payload));
+            if (saveStatus) saveStatus.textContent = "All changes saved.";
         }
     })
     .catch(error => {
         console.error("Error saving setting:", error);
+        if (saveStatus) saveStatus.textContent = error.message;
     });
 }

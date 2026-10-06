@@ -4,8 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db import connection
+from django.db import transaction
 from django.db.models import Exists, OuterRef, F, Value
 from django.db.models.functions import Replace
 from django.core.management import call_command
@@ -110,7 +112,11 @@ def get_more_data(request):
         else:
             return redirect('dashboard')
 
-    return render(request, 'profile/get_more_data.html', {'profile': profile, 'is_update':is_update})
+    return render(request, 'profile/get_more_data.html', {
+        'profile': profile,
+        'settings': settings,
+        'is_update': is_update,
+    })
 
 
 # ---------- Dashboard ----------
@@ -245,7 +251,11 @@ def settings_views(request):
 
             settings.save()
 
-        return render(request, 'pages/settings.html', {'profile': profile, 'settings': settings})
+        return render(request, 'pages/settings.html', {
+            'profile': profile,
+            'settings': settings,
+            'goal_choices': Settings.GOAL_CHOICES,
+        })
 
     if request.method == "PUT":
         allowed_fields = [
@@ -254,18 +264,86 @@ def settings_views(request):
             "daily_log",
             "reminder_time",
             "weekly_summary",
+            "goal_type",
+            "weekly_goal_rate",
         ]
-        settings = request.user.settings  # adjust if relation differs
-        data = json.loads(request.body)
+        settings = request.user.settings
+
+        try:
+            data = json.loads(request.body)
+        except (TypeError, json.JSONDecodeError):
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
+        if not isinstance(data, dict) or not data:
+            return JsonResponse({"error": "Provide settings to update."}, status=400)
+
+        bool_fields = {"daily_log", "weekly_summary"}
+        choices = {"height_unit": {"cm", "ft"}, "weight_unit": {"kg", "lbs"},
+                   "goal_type": {value for value, _ in Settings.GOAL_CHOICES}}
 
         for field, value in data.items():
             if field not in allowed_fields:
                 return JsonResponse({"error": f"Invalid field: {field}"}, status=400)
+            if field in bool_fields and not isinstance(value, bool):
+                return JsonResponse({"error": f"{field} must be true or false."}, status=400)
+            if field in choices and value not in choices[field]:
+                return JsonResponse({"error": f"Invalid value for {field}."}, status=400)
+            if field == "reminder_time" and value:
+                try:
+                    datetime.strptime(value, "%H:%M")
+                except (TypeError, ValueError):
+                    return JsonResponse({"error": "Reminder time must use HH:MM."}, status=400)
+            if field == "weekly_goal_rate":
+                if value in (None, ""):
+                    value = None
+                    if data.get("goal_type", settings.goal_type) == "maintain":
+                        data[field] = None
+                        continue
+                    return JsonResponse({"error": "Enter a weekly target for gain or loss goals."}, status=400)
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    return JsonResponse({"error": "Weekly target must be a number."}, status=400)
+                if not 0 < value <= 2:
+                    return JsonResponse({"error": "Weekly target must be greater than 0 and at most 2."}, status=400)
+                data[field] = value
 
+        for field, value in data.items():
+            if field == "goal_type" and value == "maintain":
+                settings.weekly_goal_rate = None
             setattr(settings, field, value)
         settings.save()
 
         return JsonResponse({"success": True})
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def reset_user_data(request):
+    """Delete a user's logs and derived progress while keeping their account/profile/settings."""
+    profile = request.user.profile
+    profile.weightlog_set.all().delete()
+    UserMilestone.objects.filter(profile=profile).delete()
+    WeeklySummary.objects.filter(user=request.user).delete()
+    profile.streaks = 0
+    profile.streaks_from = None
+    profile.save(update_fields=["streaks", "streaks_from"])
+    user_settings = getattr(request.user, "settings", None)
+    if user_settings:
+        user_settings.starting_weight = None
+        user_settings.save(update_fields=["starting_weight", "updated_at"])
+    return JsonResponse({"success": True})
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def delete_account(request):
+    """Delete the authenticated user's account and cascading app data."""
+    user = request.user
+    logout(request)
+    user.delete()
+    return JsonResponse({"success": True})
 
 
 # ---------- Import Logs ----------
