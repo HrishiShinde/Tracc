@@ -14,8 +14,8 @@
                 <div class="card text-center p-3 card-height">
                     <h5>Current Weight</h5>
                     <div class="d-flex justify-content-center align-items-center card-body-margin">
-                        <p class="fs-3r">{{ current_weight|default:"-" }}</p>
-                        <span class="fs-1r unit-margin">kg</span>
+                        <p class="fs-3r" data-weight-kg="{{ profile.current_weight }}">{{ profile.current_weight|default:"-" }}</p>
+                        <span class="fs-1r unit-margin weight-unit-label">kg</span>
                     </div>
                 </div>
             </div>
@@ -24,8 +24,8 @@
                 <div class="card text-center p-3 card-height">
                     <h5>Target Weight</h5>
                     <div class="d-flex justify-content-center align-items-center card-body-margin">
-                        <p class="fs-3r">{{ profile.target_weight|default:"-" }}</p>
-                        <span class="fs-1r unit-margin">kg</span>
+                        <p class="fs-3r" data-weight-kg="{{ profile.target_weight }}">{{ profile.target_weight|default:"-" }}</p>
+                        <span class="fs-1r unit-margin weight-unit-label">kg</span>
                     </div>
                 </div>
             </div>
@@ -131,7 +131,7 @@
         <ul class="list-group mb-4">
             {% for log in recent_logs %}
             <li class="list-group-item">
-                <div>{{ log.date }} - {{ log.weight }} kg</div>
+                <div>{{ log.date }} - <span data-weight-kg="{{ log.weight }}">{{ log.weight }}</span> <span class="weight-unit-label">kg</span></div>
                 {% if log.notes %}<div>{{ log.notes }}</div>{% endif %}
             </li>
             {% empty %}
@@ -147,9 +147,6 @@
             {{ line_data|json_script:"line-data" }}
         </div>
     </div>
-
-    <!-- Load Chart.js from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         function markChecked() {

@@ -516,11 +516,15 @@ body {
 .form-select {
   background-color: var(--card-color) !important;
   color: var(--text-color) !important;
-  border: 1px solid var(--bs-primary) !important;
+  border: 1px solid var(--bs-border-color) !important;
 }
 .form-select:focus {
   border-color: var(--bs-primary) !important;
   box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.05) !important;
+}
+.form-select:disabled {
+  border-color: var(--bs-border-color) !important;
+  background-color: var(--bs-secondary-bg) !important;
 }
 
 
