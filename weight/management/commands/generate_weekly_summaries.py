@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 from weight.models import WeightLog, WeeklySummary, Profile
 
 class Command(BaseCommand):
@@ -42,9 +42,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         try:
             today = timezone.now().date()
-            end_date = today - timedelta(days=today.weekday() + 1)  # last Sunday
-            start_date = end_date - timedelta(days=6)  # previous Monday
-            
+            end_date = today
+            start_date = end_date - timedelta(days=7)
+
             self.stdout.write(f"Generating summaries for week: {start_date} → {end_date}")
 
             profiles = Profile.objects.all()

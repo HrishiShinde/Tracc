@@ -1,8 +1,11 @@
 {
   "name": "Tracc",
   "short_name": "Tracc",
+  "description": "A simple daily weight tracker and progress companion.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0D0D10",
   "theme_color": "#7F8CFF",
   "icons": [

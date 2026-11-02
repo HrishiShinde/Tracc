@@ -14,6 +14,7 @@ class Profile(models.Model):
     dob = models.DateField(blank=True, null=True)
     target_weight = models.FloatField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
+    time_zone = models.CharField(max_length=64, default="UTC")
     streaks = models.IntegerField(default=0)
     streaks_from = models.DateTimeField(null=True, blank=True)
     
@@ -25,6 +26,52 @@ class Profile(models.Model):
     def current_weight(self):
         latest = self.weightlog_set.exclude(weight=None).order_by('-date').first()
         return latest.weight if latest and latest.weight else 0
+
+
+class Settings(models.Model):
+    GOAL_CHOICES = [
+        ("lose", "Lose Weight"),
+        ("gain", "Gain Weight"),
+        ("maintain", "Maintain"),
+    ]
+    HT_UNIT_CHOICES = [
+        ("cm", "Centimeters"),
+        ("ft", "Feet"),
+    ]
+    WT_UNIT_CHOICES = [
+        ("kg", "Kilograms"),
+        ("lbs", "Pounds"),
+    ]
+    THEME_CHOICES = [
+        ("light", "Light"), 
+        ("dark", "Dark")
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    # ---- Goal Strategy ----
+    goal_type = models.CharField(max_length=10, choices=GOAL_CHOICES, default="lose")
+    weekly_goal_rate = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)  # Target weight change per week (kg or lbs depending on unit).
+    starting_weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # Captured automatically on first weight log.
+
+    # ---- Units ----
+    height_unit = models.CharField(max_length=5, choices=HT_UNIT_CHOICES, default="cm")
+    weight_unit = models.CharField(max_length=5, choices=WT_UNIT_CHOICES, default="kg")
+
+    # ---- Notifications ----
+    daily_log = models.BooleanField(default=False)
+    reminder_time = models.TimeField(null=True, blank=True)  # Default: 8 AM.
+    weekly_summary = models.BooleanField(default=False)
+
+    # ---- Appearance ----
+    theme_family = models.CharField(max_length=50, default="classic")
+    theme_mode = models.CharField(max_length=10, choices=THEME_CHOICES, default="dark")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Settings"
 
 
 class WeightLog(models.Model):
@@ -97,3 +144,22 @@ class WeeklySummary(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.week_start} to {self.week_end}"
+
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="push_subscriptions")
+    endpoint = models.URLField(max_length=2048, unique=True)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PushReminderDelivery(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    reminder_date = models.DateField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "reminder_date"], name="unique_daily_push_reminder")
+        ]

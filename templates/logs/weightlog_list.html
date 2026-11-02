@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% load static %}
 {% block title %}My Weight Logs | Tracc{% endblock %}
 
 {% block content %}
@@ -6,19 +7,12 @@
     <div class="col-12 col-sm-12 col-md-10 col-lg-8">
         <h2 class="mb-4 text-center">My Weight Logs</h2>
 
-        <!-- Add Log Button -->
-        <!-- <div class="text-end mb-3">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEditModal" onclick="openAddModal()">+ Add New Log</button>
-        </div> -->
-
         <!-- Logs List -->
         <ul class="list-group">
             {% for log in logs %}
             <li class="list-group-item d-flex align-items-center">
-                <div class="col-11" data-bs-toggle="modal" data-bs-target="#addEditModal" 
-                    onclick="openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
-                >
-                    <strong>{{ log.date }}</strong> - {{ log.weight }} kg
+                <div class="col-11" data-edit-log data-log-id="{{ log.id }}" data-log-weight="{{ log.weight|default:0 }}" data-log-notes="{{ log.notes|default:'' }}">
+                    <strong>{{ log.date }}</strong> - <span data-weight-kg="{{ log.weight }}">{{ log.weight }}</span> <span class="weight-unit-label">kg</span>
                     <br>
                     {% if log.notes %}{{ log.notes }}{% endif %}
                 </div>
@@ -32,9 +26,8 @@
                         <ul class="dropdown-menu dropdown-menu-dark bg-dark">
                             <li>
                                 <button 
-                                    class="dropdown-item" data-bs-toggle="modal" 
-                                    data-bs-target="#addEditModal" type="button"
-                                    onclick="event.stopPropagation(); openEditModal({{ log.id }}, {{ log.weight|default:0 }}, '{{ log.notes|escapejs }}')"
+                                    class="dropdown-item" data-log-edit type="button"
+                                    data-log-id="{{ log.id }}" data-log-weight="{{ log.weight|default:0 }}" data-log-notes="{{ log.notes|default:'' }}"
                                 >
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </button>
@@ -42,8 +35,7 @@
                             <li>
                                 <button 
                                     class="dropdown-item text-danger" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                    onclick="event.stopPropagation(); openDeleteModal({{ log.id }}, {{ log.weight|default:0 }})"
+                                    data-log-delete data-log-id="{{ log.id }}" data-log-weight="{{ log.weight|default:0 }}"
                                 >
                                     <i class="bi bi-trash"></i> Delete
                                 </button>
@@ -82,18 +74,5 @@
     </div>
 </div>
 
-<script>
-function openEditModal(id, weight, notes) {
-    document.getElementById('modalTitle').innerText = "Edit Weight Log";
-    document.getElementById('addEditForm').action = `/logs/${id}/edit/`;
-    document.getElementById('modalWeight').value = weight;
-    document.getElementById('modalNotes').value = notes;
-}
-
-function openDeleteModal(id, weight) {
-    console.log("Here");
-    document.getElementById('deleteForm').action = `/logs/${id}/delete/`;
-    document.getElementById('deleteLogInfo').innerText = weight + " kg";
-}
-</script>
+<script src="{% static 'js/weight-logs.js' %}" defer></script>
 {% endblock %}

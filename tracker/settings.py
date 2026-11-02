@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
+
+# load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,15 +27,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key")
 CRON_SECRET = os.environ.get("CRON_SECRET", "dev-secret-key")
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+VAPID_CONTACT_EMAIL = os.environ.get("VAPID_CONTACT_EMAIL", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    host.strip() for host in os.environ.get(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1,mytracc.onrender.com,tracc-crht.onrender.com",
+    ).split(",") if host.strip()
+]
 CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok.io",
-    "https://*.ngrok-free.app",
+    origin.strip() for origin in os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "https://mytracc.onrender.com,https://tracc-crht.onrender.com",
+    ).split(",") if origin.strip()
 ]
 
 LOGIN_URL = '/login'

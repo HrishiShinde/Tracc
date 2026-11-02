@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% load static %}
 {% block title %}
     {% if is_update %}Update Your Profile{% else %}Complete Your Profile{% endif %} | Tracc
 {% endblock %}
@@ -25,25 +26,61 @@
                     <option value="O" {% if profile.gender == "O" %}selected{% endif %}>Other</option>
                 </select>
             </div>
-            
-            <div class="mb-3">
-                <label for="height_cm" class="form-label">Height (cm)</label>
-                <input type="number" name="height_cm" class="form-control" id="height_cm" required
-                       value="{{ profile.height_cm|default:'' }}">
+
+            <label for="height_cm" class="form-label">Height</label>
+            <div class="input-group mb-3">
+                <!-- CM Input -->
+                <input 
+                    type="number" step="0.1" name="height_cm" id="height_cm"
+                    class="form-control profile-wide-input" value="{{ profile.height_cm|default:'' }}" required
+                >
+
+                <!-- Feet -->
+                <input 
+                    type="number" id="height_ft"
+                    class="form-control d-none profile-unit-input"
+                    placeholder="ft" min="0"
+                >
+
+                <!-- Inches -->
+                <input 
+                    type="number" id="height_in"
+                    class="form-control d-none profile-unit-input"
+                    placeholder="in" min="0"
+                    max="11"
+                >
+
+                <select class="form-select" id="height-unit">
+                    <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>cm</option>
+                    <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft/in</option>
+                </select>
             </div>
 
+            {{ is_update | json_script:"is_update" }}
             {% if not is_update %}
-            <div class="mb-3">
-                <label for="current_weight" class="form-label">Current Weight (kg)</label>
-                <input type="number" step="0.1" name="current_weight" class="form-control" id="current_weight" required
-                       value="{{ profile.current_weight|default:'' }}">
+            <label for="current_weight" class="form-label">Current Weight</label>
+            <div class="input-group mb-3">
+                <input 
+                    type="number" step="0.1" name="current_weight" class="form-control profile-wide-input" id="current_weight"
+                    value="{{ profile.current_weight|default:'' }}" required
+                >
+                <select class="form-select dropdown-menu-end" id="current-weight-unit">
+                    <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>kg</option>
+                    <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
+                </select>
             </div>
             {% endif %}
 
-            <div class="mb-3">
-                <label for="target_weight" class="form-label">Target Weight (kg)</label>
-                <input type="number" step="0.1" name="target_weight" class="form-control" id="target_weight" required
-                       value="{{ profile.target_weight|default:'' }}">
+            <label for="target_weight" class="form-label">Target Weight</label>
+            <div class="input-group mb-3">
+                <input 
+                    type="number" step="0.1" name="target_weight" class="form-control profile-wide-input" id="target_weight"
+                    value="{{ profile.target_weight|default:'' }}" required
+                >
+                <select class="form-select dropdown-menu-end" id="target-weight-unit">
+                    <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>kg</option>
+                    <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
+                </select>
             </div>
 
             <div class="mb-3">
@@ -56,4 +93,7 @@
         </form>
     </div>
 </div>
+
+<script src="{% static 'js/profile-form.js' %}" defer></script>
+
 {% endblock %}
