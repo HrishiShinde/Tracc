@@ -19,20 +19,19 @@ def check_for_achievements(profile):
         if streaks == milestone.value:
             _assign_milestone(profile, milestone.title)
 
-    for log in logs:
-        current_weight = log.weight
-        current_bmi = log.bmi
+    first_log = logs.only("weight").first()
+    latest_log = logs.only("weight", "bmi").last()
+    if not first_log or not latest_log:
+        return
 
-        # Weight loss milestones
-        starting_weight = logs.first().weight
-        weight_lost = starting_weight - current_weight
-        for milestone in Milestone.objects.filter(category="weight_loss"):
-            if weight_lost >= milestone.value:
-                _assign_milestone(profile, milestone.title)
+    weight_lost = first_log.weight - latest_log.weight
+    for milestone in Milestone.objects.filter(category="weight_loss"):
+        if weight_lost >= milestone.value:
+            _assign_milestone(profile, milestone.title)
 
-        # BMI milestones
+    if latest_log.bmi is not None:
         for milestone in Milestone.objects.filter(category="bmi_target"):
-            if current_bmi <= milestone.value:
+            if latest_log.bmi <= milestone.value:
                 _assign_milestone(profile, milestone.title)
 
         # TODO: Add other milestone types here.
@@ -164,6 +163,8 @@ def seed_milestones():
 
 
 def calculate_bmi(weight, height):
+    if weight is None or height is None or float(height) <= 0:
+        return {}
     height_m = height / 100
     bmi = round(float(weight) / (height_m ** 2), 2)
 
@@ -227,22 +228,20 @@ def update_streaks(profile=None):
         profiles = [profile]
 
     for profile in profiles:
-        logs = profile.weightlog_set.filter(check_in=True).exclude(weight__isnull=True).order_by("check_in_at")
+        logs = profile.weightlog_set.filter(check_in=True).exclude(
+            weight__isnull=True
+        ).exclude(check_in_at=None).order_by("-date").only("date", "check_in_at")
         prev_log = None
         streaks = 0
         streaks_from = None
 
         for log in logs:
             if prev_log:
-                gap = (log.check_in_at.date() - prev_log.check_in_at.date()).days
-
-                if gap == 1:
-                    streaks += 1
-                elif gap == 2:  # and prev_log.check_in_at.isoweekday() == 6. For now if there's 1 day gap, the streak would be restored.
-                    streaks += 1
-                else:
-                    streaks = 1
-                    streaks_from = log.check_in_at
+                gap = (prev_log.date - log.date).days
+                if gap > 2:
+                    break
+                streaks += 1
+                streaks_from = log.check_in_at
             else:
                 streaks = 1
                 streaks_from = log.check_in_at
@@ -253,7 +252,7 @@ def update_streaks(profile=None):
         if streaks_from:
             profile.streaks_from = streaks_from
 
-        profile.save()
+        profile.save(update_fields=["streaks", "streaks_from"])
 
     return None
 
@@ -264,20 +263,88 @@ class Insights:
         self.circle_circumference = 2 * 3.1416 * 54  # ≈ 339.292
 
     def get_progress(self, profile):
-        progress = None
-        progress_offset = self.circle_circumference  # default if no progress
-        latest_weight_log = self.logs.order_by('-date').first()
-        latest_weight = latest_weight_log.weight if latest_weight_log else 0
-        
-        if profile.target_weight and latest_weight_log:
-            start_weight = self.logs.first().weight if self.logs else latest_weight
-            weight_diff = start_weight - profile.target_weight
-            if weight_diff != 0:
-                progress = round(((start_weight - latest_weight) / weight_diff) * 100)
-                progress = max(0, min(progress, 100))  # Clamp between 0–100
-                progress_offset = self.circle_circumference - (progress / 100) * self.circle_circumference
+        result = {
+            "percentage": None,
+            "offset": self.circle_circumference,
+            "status": "Add a target weight",
+            "detail": "Set a target weight to track your goal.",
+            "detail_amount": None,
+            "detail_label": "",
+            "has_detail_amount": False,
+            "has_percentage": False,
+            "is_maintaining": False,
+        }
+        target_weight = profile.target_weight
+        latest_log = self.logs.last()
+        if target_weight is None:
+            return result
+        if float(target_weight) <= 0:
+            result.update(status="Check your target", detail="Target weight must be greater than zero.")
+            return result
+        if latest_log is None:
+            result.update(status="Log a weight to begin", detail="Your progress will appear after your first weight log.")
+            return result
 
-        return progress, progress_offset
+        target_weight = float(target_weight)
+        current_weight = float(latest_log.weight)
+        settings = getattr(profile.user, "settings", None)
+        goal_type = getattr(settings, "goal_type", "lose")
+
+        if goal_type == "maintain":
+            # Keep maintenance distinct from a directional completion percentage.
+            tolerance = target_weight * 0.01
+            difference = abs(current_weight - target_weight)
+            in_range = difference <= tolerance
+            result.update(
+                is_maintaining=True,
+                status="On target" if in_range else "Outside target range",
+                detail="Your weight is within 1% of your target." if in_range else "Your weight is outside the 1% maintenance range.",
+                detail_amount=None if in_range else round(difference, 1),
+                detail_label="above target" if current_weight > target_weight else "below target",
+                has_detail_amount=not in_range,
+            )
+            return result
+
+        configured_start = getattr(settings, "starting_weight", None)
+        first_log = self.logs.first()
+        start_weight = float(configured_start) if configured_start is not None else (float(first_log.weight) if first_log else None)
+        if start_weight is None:
+            result.update(status="Add a starting weight", detail="A starting weight is needed to measure progress.")
+            return result
+
+        is_loss = goal_type == "lose"
+        goal_distance = start_weight - target_weight if is_loss else target_weight - start_weight
+        if goal_distance <= 0:
+            result.update(
+                status="Check your target",
+                detail="For this goal, your target must be below your starting weight." if is_loss else "For this goal, your target must be above your starting weight.",
+            )
+            return result
+
+        change_toward_goal = start_weight - current_weight if is_loss else current_weight - start_weight
+        percentage = max(0, min(round((change_toward_goal / goal_distance) * 100), 100))
+        result["percentage"] = percentage
+        result["has_percentage"] = True
+        result["offset"] = self.circle_circumference - (percentage / 100) * self.circle_circumference
+        if change_toward_goal < 0:
+            result.update(
+                status="Moving away from goal",
+                detail_amount=round(abs(current_weight - start_weight), 1),
+                detail_label="above your starting weight" if is_loss else "below your starting weight",
+                has_detail_amount=True,
+            )
+        elif change_toward_goal == 0:
+            result.update(status="No change yet", detail="Your weight is still at its starting point.")
+        elif percentage == 100:
+            result.update(status="Goal reached", detail="You have reached your target weight.")
+        else:
+            result.update(
+                status="On track",
+                detail_amount=round(abs(current_weight - start_weight), 1),
+                detail_label="down from your starting weight" if is_loss else "up from your starting weight",
+                has_detail_amount=True,
+            )
+        return result
 
     def get_line_data(self, recent_len=None, date_range=None):
         if recent_len:
@@ -402,20 +469,3 @@ class Insights:
         ]
 
         return weight_zones
-
-    def get_fastest_drop(self):
-        fastest = None
-        previous_weight = None
-        for log in self.logs:
-            if log.weight is None:
-                continue
-            if previous_weight is not None:
-                drop = round(log.weight - previous_weight, 1)
-                if drop < 0:  # drop means negative change
-                    if (fastest is None) or (drop < fastest["drop"]):
-                        fastest = {
-                            "date": log.date.strftime('%d-%m-%Y'),
-                            "drop": drop
-                        }
-            previous_weight = log.weight
-        return fastest

@@ -4,13 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 from django.db import connection
 from django.db import transaction
-from django.db.models import Exists, OuterRef, F, Value
+from django.db.models import Exists, OuterRef, F, Value, Min
 from django.db.models.functions import Replace
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
@@ -18,11 +19,20 @@ import csv
 import io
 import random
 import json
+import secrets
 from dateutil.parser import parse
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from .models import Profile, Settings, WeightLog, UserMilestone, WeeklySummary, Milestone
+from .models import Profile, Settings, WeightLog, UserMilestone, WeeklySummary, Milestone, PushSubscription
 from .utils import Insights, calculate_bmi, update_streaks, check_for_achievements
+
+
+def profile_localdate(profile):
+    try:
+        return timezone.localtime(timezone=ZoneInfo(profile.time_zone or "UTC")).date()
+    except ZoneInfoNotFoundError:
+        return timezone.localdate()
 
 
 # ---------- Register ----------
@@ -57,6 +67,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            messages.success(request, "Welcome back.")
             return redirect('redirect_after_login')
         else:
             messages.error(request, "Invalid credentials!")
@@ -108,8 +119,10 @@ def get_more_data(request):
             settings.save()
 
         if is_update:
+            messages.success(request, "Profile details saved.")
             return redirect('settings')
         else:
+            messages.success(request, "Profile completed.")
             return redirect('dashboard')
 
     return render(request, 'profile/get_more_data.html', {
@@ -123,7 +136,7 @@ def get_more_data(request):
 @login_required
 def dashboard(request):
     profile = request.user.profile
-    today = timezone.localdate()
+    today = profile_localdate(profile)
     
     # Today's log for Clock In.
     today_log = profile.weightlog_set.filter(date=today).first()
@@ -141,7 +154,7 @@ def dashboard(request):
     insights = Insights(logs)
 
     # BMI and Progress.
-    progress, progress_offset = insights.get_progress(profile)
+    progress_data = insights.get_progress(profile)
     bmi_data = calculate_bmi(latest_weight, profile.height_cm) if latest_weight and profile.height_cm else {}
 
     # Graphs processing.
@@ -158,8 +171,7 @@ def dashboard(request):
         'current_weight': latest_weight,
         'recent_logs': recent_logs, 
         'bmi_data': bmi_data,
-        'progress': progress,
-        'progress_offset': progress_offset,
+        'progress_data': progress_data,
         'clock_in_time': today_log.check_in_at.isoformat() if today_log and today_log.check_in_at else None,
         'line_data': line_data,
         'summary': summary,
@@ -188,7 +200,7 @@ def weightlog_list(request):
 @login_required
 def add_or_edit_weight_log(request, pk=None):
     profile = request.user.profile
-    today = timezone.localdate()
+    today = profile_localdate(profile)
 
     # POST check
     if request.method == 'POST':
@@ -221,10 +233,19 @@ def add_or_edit_weight_log(request, pk=None):
         if log.check_in and log.weight:
             update_streaks(profile)
             check_for_achievements(profile)
+
+        if check_in:
+            messages.success(request, "You are checked in for today.")
+        elif pk:
+            messages.success(request, "Weight log updated.")
+        else:
+            messages.success(request, "Weight log saved.")
     
         if not weight:
             return redirect('dashboard')
-        return redirect('weightlog_list')
+        # The modal is a quick-add flow; return directly to the dashboard so a
+        # successful save doesn't force another full logs-table render.
+        return redirect('dashboard' if not pk else 'weightlog_list')
 
 
 # ---------- Delete Logs ----------
@@ -234,6 +255,7 @@ def delete_weight_log(request, pk):
     
     if request.method == 'POST':
         log.delete()
+        messages.success(request, "Weight log deleted.")
         return redirect('weightlog_list')
 
 
@@ -266,6 +288,8 @@ def settings_views(request):
             "weekly_summary",
             "goal_type",
             "weekly_goal_rate",
+            "theme_family",
+            "theme_mode",
         ]
         settings = request.user.settings
 
@@ -278,7 +302,9 @@ def settings_views(request):
 
         bool_fields = {"daily_log", "weekly_summary"}
         choices = {"height_unit": {"cm", "ft"}, "weight_unit": {"kg", "lbs"},
-                   "goal_type": {value for value, _ in Settings.GOAL_CHOICES}}
+                   "goal_type": {value for value, _ in Settings.GOAL_CHOICES},
+                   "theme_family": {"classic", "serene", "dusky", "midnight", "onyx-glow", "charcoal-canary", "gold-ember", "sunset-noir"},
+                   "theme_mode": {value for value, _ in Settings.THEME_CHOICES}}
 
         for field, value in data.items():
             if field not in allowed_fields:
@@ -307,11 +333,13 @@ def settings_views(request):
                     return JsonResponse({"error": "Weekly target must be greater than 0 and at most 2."}, status=400)
                 data[field] = value
 
+        fields_to_save = set(data)
         for field, value in data.items():
             if field == "goal_type" and value == "maintain":
                 settings.weekly_goal_rate = None
+                fields_to_save.add("weekly_goal_rate")
             setattr(settings, field, value)
-        settings.save()
+        settings.save(update_fields=[*fields_to_save, "updated_at"])
 
         return JsonResponse({"success": True})
 
@@ -467,9 +495,19 @@ def analytics(request):
     monthly_avg = insights.get_monthly_avg()
     weight_zones = insights.get_weight_zones()
 
-    # Cards.
+    # Compact cards use only values already stored in weight logs and settings.
     streaks = profile.streaks
-    fastest_drop = insights.get_fastest_drop()
+    first_weight_log = logs.first()
+    latest_weight_log = logs.last()
+    user_settings = getattr(request.user, "settings", None)
+    configured_start = getattr(user_settings, "starting_weight", None)
+    starting_weight = configured_start if configured_start is not None else (first_weight_log.weight if first_weight_log else None)
+    net_weight_change = round(float(latest_weight_log.weight) - float(starting_weight), 1) if latest_weight_log and starting_weight is not None else None
+    net_weight_change_amount = round(abs(net_weight_change), 1) if net_weight_change is not None else None
+    net_weight_change_direction = "gained" if net_weight_change and net_weight_change > 0 else ("lost" if net_weight_change and net_weight_change < 0 else "no change")
+    lowest_weight = logs.aggregate(value=Min("weight"))["value"]
+    checkin_count = profile.weightlog_set.filter(check_in=True).count()
+    progress_data = insights.get_progress(profile)
     usermilestones = UserMilestone.objects.filter(profile=profile).last()
 
     milestones = None
@@ -539,7 +577,15 @@ def analytics(request):
         "streaks": streaks,
         "milestones": milestones,
         "all_milestones": all_milestones,
-        "fastest_drop": fastest_drop,
+        "starting_weight": starting_weight,
+        "net_weight_change": net_weight_change,
+        "net_weight_change_amount": net_weight_change_amount,
+        "net_weight_change_direction": net_weight_change_direction,
+        "has_net_weight_change": net_weight_change is not None,
+        "lowest_weight": lowest_weight,
+        "has_lowest_weight": lowest_weight is not None,
+        "checkin_count": checkin_count,
+        "progress_data": progress_data,
         "calendar_events": calendar_events,
         'summary': summary,
         'sum_line_data': sum_line_data
@@ -580,6 +626,60 @@ def health_json(request):
     })
 
 
+def service_worker(request):
+    """Serve the worker at the site root so it can control the installed PWA."""
+    worker_path = settings.BASE_DIR / "static" / "js" / "service-worker.js"
+    response = HttpResponse(worker_path.read_text(encoding="utf-8"), content_type="application/javascript")
+    response["Service-Worker-Allowed"] = "/"
+    response["Cache-Control"] = "no-cache"
+    return response
+
+
+@login_required
+def push_config(request):
+    public_key = getattr(settings, "VAPID_PUBLIC_KEY", "")
+    if not public_key:
+        return JsonResponse({"error": "Push reminders are not configured on the server."}, status=503)
+    return JsonResponse({"publicKey": public_key})
+
+
+@login_required
+@require_POST
+def push_subscription(request):
+    try:
+        data = json.loads(request.body)
+        subscription = data["subscription"]
+        endpoint = subscription["endpoint"]
+        keys = subscription["keys"]
+        time_zone = data.get("timeZone", "UTC")
+        ZoneInfo(time_zone)
+        if (not isinstance(endpoint, str) or not endpoint.startswith("https://")
+                or not isinstance(keys, dict) or not keys.get("p256dh") or not keys.get("auth")):
+            raise ValueError
+    except (TypeError, KeyError, ValueError, AttributeError, json.JSONDecodeError, ZoneInfoNotFoundError):
+        return JsonResponse({"error": "Invalid push subscription."}, status=400)
+
+    PushSubscription.objects.update_or_create(
+        endpoint=endpoint,
+        defaults={"user": request.user, "p256dh": keys["p256dh"], "auth": keys["auth"]},
+    )
+    profile = request.user.profile
+    profile.time_zone = time_zone
+    profile.save(update_fields=["time_zone"])
+    return JsonResponse({"success": True})
+
+
+@login_required
+@require_POST
+def push_unsubscribe(request):
+    try:
+        endpoint = json.loads(request.body)["endpoint"]
+    except (TypeError, KeyError, ValueError, json.JSONDecodeError):
+        return JsonResponse({"error": "Invalid subscription endpoint."}, status=400)
+    request.user.push_subscriptions.filter(endpoint=endpoint).delete()
+    return JsonResponse({"success": True})
+
+
 # ---------- Weekly summary ----------
 @csrf_exempt
 def run_weekly_summary(request):
@@ -589,4 +689,22 @@ def run_weekly_summary(request):
         return JsonResponse({"error": "Unauthorized"}, status=403)
     
     call_command("generate_weekly_summaries")
+    return JsonResponse({"status": "success"})
+
+
+@csrf_exempt
+@require_GET
+def run_daily_push_reminders(request):
+    """HTTP entry point for an external cron service to send due reminders."""
+    token = request.GET.get("token", "")
+    cron_secret = settings.CRON_SECRET
+    if not cron_secret or cron_secret == "dev-secret-key":
+        return JsonResponse({"error": "Cron secret is not configured."}, status=503)
+    if not secrets.compare_digest(token, cron_secret):
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    try:
+        call_command("send_daily_push_reminders")
+    except CommandError:
+        return JsonResponse({"error": "Reminder job is not configured."}, status=503)
     return JsonResponse({"status": "success"})

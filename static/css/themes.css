@@ -301,7 +301,7 @@
 [data-theme-family="gold-ember"][data-bs-theme="light"] {
   --bg-color: #FFF8F1;
   --text-color: #102A2B;
-  --accent-color: #264653;      /* deep slate/teal for CTAs */
+  --accent-color: #FFC857;      /* deep slate/teal for CTAs */
   --accent-yellow: #FFC857;     /* amber for streaks/goal chips */
   --card-color: #FFFDF8;
   --navbar-color: #FFF6EE;
@@ -320,7 +320,7 @@
 [data-theme-family="gold-ember"][data-bs-theme="dark"] {
   --bg-color: #070606;
   --text-color: #E6F6F4;
-  --accent-color: #3DD6C8;      /* teal pop for dark CTAs */
+  --accent-color: #FFC857;      /* teal pop for dark CTAs */
   --accent-yellow: #FFC857;     /* amber used as gradients/goal rings */
   --card-color: #101112;
   --navbar-color: #101112;

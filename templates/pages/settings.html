@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% load static %}
 {% block title %}Settings | Tracc{% endblock %}
 
 {% block content %}
@@ -9,7 +10,6 @@
             <div class="text-center mb-5">
                 <h2 class="fw-bold">SETTINGS</h2>
                 <span class="text-muted">Manage identity, goals, and system behaviour.</span>
-                <div id="settings-save-status" class="small text-muted mt-2" role="status" aria-live="polite"></div>
             </div>
 
             <div class="row g-4">
@@ -34,7 +34,7 @@
                                 
                                 <label for="height_cm" class="form-label">Height</label>
                                 <div class="input-group mb-3">
-                                    <input type="text" class="form-control" value="{{ profile.height_cm|default:'' }}" data-height-cm="{{ profile.height_cm|default:'' }}" style="width: 70%;" disabled>
+                                    <input type="text" class="form-control profile-wide-input" value="{{ profile.height_cm|default:'' }}" data-height-cm="{{ profile.height_cm|default:'' }}" disabled>
                                     <select class="form-select dropdown-menu-end" id="identity-height-unit" disabled>
                                         <option value="cm" {% if settings.height_unit == "cm" %}selected{% endif %}>cm</option>
                                         <option value="ft" {% if settings.height_unit == "ft" %}selected{% endif %}>ft</option>
@@ -77,7 +77,7 @@
                                 <!-- Starting Weight -->
                                 <label for="starting_weight" class="form-label">Starting Weight</label>
                                 <div class="input-group mb-2">
-                                    <input type="text" class="form-control" value="{{ settings.starting_weight }}" data-starting-weight-kg="{{ settings.starting_weight|default:'' }}" style="width: 70%;" disabled>
+                                    <input type="text" class="form-control profile-wide-input" value="{{ settings.starting_weight }}" data-starting-weight-kg="{{ settings.starting_weight|default:'' }}" disabled>
                                     <select class="form-select dropdown-menu-end" id="starting-weight-unit" disabled>
                                         <option value="kg" {% if settings.weight_unit == "kg" %}selected{% endif %}>kg</option>
                                         <option value="lbs" {% if settings.weight_unit == "lbs" %}selected{% endif %}>lbs</option>
@@ -99,8 +99,7 @@
                                 <button type="button" class="btn btn-outline-danger btn-sm flex-fill" id="reset-data-desktop" data-account-action="reset">Reset data</button>
                                 <button type="button" class="btn btn-danger btn-sm flex-fill" id="delete-account-desktop" data-account-action="delete">Delete account</button>
                             </div>
-                            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'logout' %}">Logout</a>
-                            <div class="small mt-2" id="reset-status" data-reset-status role="status"></div>
+                            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'logout' %}" data-logout-link>Logout</a>
                         </div>
                     </div>
                 </div>
@@ -120,24 +119,24 @@
                                         <!-- <option>Classic Clean</option>
                                         <option>Obsidian</option>
                                         <option>Slate</option> -->
-                                        <option value="classic">Classic Clean</option>
-                                        <option value="serene">Serene Teal</option>
-                                        <option value="dusky">Dusky Rose</option>
-                                        <option value="midnight">Midnight Mint</option>
-                                        <option value="onyx-glow">Onyx Glow</option>
-                                        <option value="charcoal-canary">Charcoal Canary</option>
-                                        <option value="gold-ember">Gold Ember</option>
-                                        <option value="sunset-noir">Sunset Noir</option>
+                                        <option value="classic" {% if settings.theme_family == "classic" %}selected{% endif %}>Classic Clean</option>
+                                        <option value="serene" {% if settings.theme_family == "serene" %}selected{% endif %}>Serene Teal</option>
+                                        <option value="dusky" {% if settings.theme_family == "dusky" %}selected{% endif %}>Dusky Rose</option>
+                                        <option value="midnight" {% if settings.theme_family == "midnight" %}selected{% endif %}>Midnight Mint</option>
+                                        <option value="onyx-glow" {% if settings.theme_family == "onyx-glow" %}selected{% endif %}>Onyx Glow</option>
+                                        <option value="charcoal-canary" {% if settings.theme_family == "charcoal-canary" %}selected{% endif %}>Charcoal Canary</option>
+                                        <option value="gold-ember" {% if settings.theme_family == "gold-ember" %}selected{% endif %}>Gold Ember</option>
+                                        <option value="sunset-noir" {% if settings.theme_family == "sunset-noir" %}selected{% endif %}>Sunset Noir</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label class="form-label d-block">Mode</label>
                                     <div class="btn-group w-100" role="group">
-                                        <input type="radio" class="btn-check" name="theme_mode" value="light" id="light" autocomplete="off">
+                                        <input type="radio" class="btn-check" name="theme_mode" value="light" id="light" autocomplete="off" {% if settings.theme_mode == "light" %}checked{% endif %}>
                                         <label class="btn btn-outline-primary" for="light">Light</label>
 
-                                        <input type="radio" class="btn-check" name="theme_mode" value="dark" id="dark" autocomplete="off" checked>
+                                        <input type="radio" class="btn-check" name="theme_mode" value="dark" id="dark" autocomplete="off" {% if settings.theme_mode == "dark" %}checked{% endif %}>
                                         <label class="btn btn-outline-primary" for="dark">Dark</label>
                                     </div>
                                 </div>
@@ -170,6 +169,8 @@
                                 <hr>
 
                                 <!-- Daily Reminder -->
+                                <!-- <div class="form-text mb-3">This turns reminders on or off for your account across devices.</div> -->
+
                                 <div class="form-check form-switch mb-3">
                                     <input class="form-check-input"
                                         type="checkbox"
@@ -187,6 +188,11 @@
                                     <input type="time"
                                         class="form-control" name="reminder_time" id="reminder-time"
                                         value="{{ settings.reminder_time|time:'H:i'|default:'08:00:00' }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="pushReminderButton">Enable notifications on this device</button>
+                                    <small class="d-block text-muted mt-1">Each device needs browser notification permission. Reminders pause after you check in.</small>
                                 </div>
 
                                 <!-- Weekly Summary -->
@@ -220,7 +226,7 @@
                                             <i class="bi bi-upload"></i> Import Logs
                                         </button>
     
-                                        <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm me-2">
+                                        <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm me-2" data-export-logs download="weight_logs.csv">
                                             <i class="bi bi-download"></i> Export Logs
                                         </a>
                                     </div>
@@ -238,8 +244,7 @@
                                 <button type="button" class="btn btn-outline-danger btn-sm flex-fill" id="reset-data-mobile" data-account-action="reset">Reset data</button>
                                 <button type="button" class="btn btn-danger btn-sm flex-fill" id="delete-account-mobile" data-account-action="delete">Delete account</button>
                             </div>
-                            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'logout' %}">Logout</a>
-                            <div class="small mt-2" data-reset-status role="status"></div>
+                            <a class="btn btn-outline-secondary btn-sm w-100" href="{% url 'logout' %}" data-logout-link>Logout</a>
                         </div>
                     </div>
 
@@ -249,138 +254,8 @@
     </div>
 </div>
 
-<script>
-    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-    const goalType = document.getElementById('goal-type');
-    const goalRate = document.getElementById('weekly-goal-rate');
-    const goalRateHelp = document.getElementById('goal-rate-help');
-    const suggestion = document.getElementById('goal-rate-suggestion');
-    function syncGoalRate() {
-        const maintaining = goalType.value === 'maintain';
-        goalRate.disabled = maintaining;
-        goalRateHelp.classList.toggle('d-none', maintaining);
-        if (maintaining) goalRate.value = '';
-    }
-    if (goalType.value !== 'maintain' && !goalRate.value) goalRate.value = suggestion.textContent;
-    goalType.addEventListener('change', function() {
-        syncGoalRate();
-        autoSaveSetting({goal_type: this.value, weekly_goal_rate: this.value === 'maintain' ? null : (goalRate.value || suggestion.textContent)});
-        if (this.value !== 'maintain' && !goalRate.value) goalRate.value = suggestion.textContent;
-    });
-    goalRate.addEventListener('change', function() {
-        if (Number(this.value) > 0 && Number(this.value) <= 2) autoSaveSetting({weekly_goal_rate: this.value});
-    });
-    syncGoalRate();
+<script src="{% static 'js/settings.js' %}" defer></script>
 
-    const dailyToggle = document.getElementById("dailyReminder");
-    const reminderWrapper = document.getElementById("reminderTimeWrapper");
-
-    dailyToggle.addEventListener("change", function() {
-        reminderWrapper.classList.toggle("d-none", !this.checked);
-    });
-
-    function updateProfileUnitDisplays(weightUnit, heightUnit) {
-        const factor = weightUnit === 'lbs' ? 2.20462 : 1;
-        const suffix = weightUnit === 'lbs' ? 'lbs' : 'kg';
-        document.querySelectorAll('[data-starting-weight-kg]').forEach(el => {
-            const raw = parseFloat(el.dataset.startingWeightKg);
-            el.value = Number.isFinite(raw) ? (raw * factor).toFixed(1) : '';
-        });
-        const startUnit = document.getElementById('starting-weight-unit');
-        if (startUnit) startUnit.value = suffix;
-        const height = document.querySelector('[data-height-cm]');
-        if (height) {
-            const cm = parseFloat(height.dataset.heightCm);
-            height.value = Number.isFinite(cm) ? (heightUnit === 'ft' ? `${Math.floor(cm / 30.48)} ft ${(cm / 2.54 % 12).toFixed(1)} in` : `${cm.toFixed(1)} cm`) : '';
-        }
-        const identityUnit = document.getElementById('identity-height-unit');
-        if (identityUnit) identityUnit.value = heightUnit;
-    }
-    updateProfileUnitDisplays(document.getElementById('weight-unit').value, document.getElementById('height-unit').value);
-
-    // Weight Unit.
-    document.getElementById("weight-unit").addEventListener("change", function() {
-        updateProfileUnitDisplays(this.value, document.getElementById('height-unit').value);
-        document.getElementById('goal-rate-unit').textContent = this.value;
-        document.getElementById('goal-rate-help-unit').textContent = this.value;
-        suggestion.textContent = this.value === 'lbs' ? '1.1' : '0.5';
-        if (goalType.value !== 'maintain') goalRate.value = suggestion.textContent;
-        let payload = {
-            "weight_unit": this.value,
-            ...(goalType.value !== 'maintain' ? {"weekly_goal_rate": goalRate.value} : {})
-        }
-        autoSaveSetting(payload);
-    });
-    
-    // Height Unit.
-    document.getElementById("height-unit").addEventListener("change", function() {
-        updateProfileUnitDisplays(document.getElementById('weight-unit').value, this.value);
-        let payload = {
-            "height_unit": this.value
-        }
-        autoSaveSetting(payload);
-    });
-
-    // Daily Reminders.
-    document.getElementById("dailyReminder").addEventListener("change", function() {
-        let reminder = document.getElementById("reminder-time");
-        let payload = {
-            "daily_log": this.checked,
-            "reminder_time": reminder.value
-        }
-        autoSaveSetting(payload);
-    });
-    
-    // Daily Reminders.
-    document.getElementById("reminder-time").addEventListener("change", function() {
-        let payload = {
-            "reminder_time": this.value
-        }
-        autoSaveSetting(payload);
-    });
-    
-    // Weekly Summary.
-    document.getElementById("weeklySummary").addEventListener("change", function() {
-        let payload = {
-            "weekly_summary": this.checked,
-        }
-        autoSaveSetting(payload);
-    });
-
-    async function postAccountAction(url) {
-        return fetch(url, {
-            method: 'POST',
-            headers: {'X-CSRFToken': decodeURIComponent(csrfToken || ''), 'X-Requested-With': 'XMLHttpRequest'}
-        });
-    }
-
-    document.querySelectorAll('[data-account-action]').forEach(button => {
-        button.addEventListener('click', async function() {
-            const status = this.closest('.card-body').querySelector('[data-reset-status]');
-            const deletingAccount = this.dataset.accountAction === 'delete';
-            const confirmed = deletingAccount
-                ? await window.appConfirm('Permanently delete your account and all associated data? You will not be able to sign in again.', {title: 'Delete your account?', confirmLabel: 'Delete account', danger: true})
-                : await window.appConfirm('Permanently delete all weight logs, milestones, weekly summaries, and streak progress? Your account and profile will remain.', {title: 'Reset your data?', confirmLabel: 'Reset data', danger: true});
-            if (!confirmed) return;
-            this.disabled = true;
-            try {
-                const endpoint = deletingAccount ? '{% url "delete_account" %}' : '{% url "reset_user_data" %}';
-                const response = await postAccountAction(endpoint);
-                const result = await response.json();
-                if (!response.ok || !result.success) throw new Error(result.error || (deletingAccount ? 'Could not delete account.' : 'Could not reset data.'));
-                if (deletingAccount) {
-                    window.location.href = '{% url "login" %}';
-                    return;
-                }
-                status.textContent = 'Your logs and progress have been deleted.';
-                window.appAlert('Your logs and progress have been deleted.', {variant: 'success'});
-            } catch (error) {
-                status.textContent = error.message;
-                window.appAlert(error.message, {variant: 'error'});
-                this.disabled = false;
-            }
-        });
-    });
-</script>
+<script src="{% static 'js/push-reminders.js' %}" defer></script>
 
 {% endblock %}

@@ -8,6 +8,17 @@
     font-size: 1.5rem;
 }
 
+.summary-icon-success, .summary-icon-down { color: #008000; }
+.summary-icon-fire { color: #aa4203; }
+.summary-icon-up { color: #f00; }
+.analytic-card-width { width: 140px; }
+.analytic-card-offset { margin-left: -15px; }
+.profile-wide-input { width: 70%; }
+.profile-unit-input { width: 31%; }
+.dashboard-chart-plot { position: relative; width: 100%; height: 280px; }
+#progressChart.dashboard-progress-chart { display: block; width: 100%; height: 100% !important; max-height: none; }
+.summary-progress-label { fill: var(--text-color) !important; }
+
 /* Loader CSS */
 .loader-wrapper {
     position: fixed;
@@ -15,7 +26,6 @@
     left: 0;
     width: 100vw;
     height: 100dvh;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -283,6 +293,25 @@ p {
 
 #progressChart, #weightChangeChart {
     height: 290px !important;
+}
+
+#zonesGraph, #monthlyGraph {
+    height: 290px !important;
+    max-height: 290px;
+}
+
+@media (max-width: 575.98px) {
+    .dashboard-chart-plot { height: 220px; }
+
+    .graph-card {
+        height: 360px !important;
+        padding: .85rem .75rem 2.5rem !important;
+    }
+
+    #progressChart, #weightChangeChart, #zonesGraph, #monthlyGraph {
+        height: 250px !important;
+        max-height: 250px;
+    }
 }
 
 .filters {

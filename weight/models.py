@@ -14,6 +14,7 @@ class Profile(models.Model):
     dob = models.DateField(blank=True, null=True)
     target_weight = models.FloatField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
+    time_zone = models.CharField(max_length=64, default="UTC")
     streaks = models.IntegerField(default=0)
     streaks_from = models.DateTimeField(null=True, blank=True)
     
@@ -143,3 +144,22 @@ class WeeklySummary(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.week_start} to {self.week_end}"
+
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="push_subscriptions")
+    endpoint = models.URLField(max_length=2048, unique=True)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PushReminderDelivery(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    reminder_date = models.DateField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "reminder_date"], name="unique_daily_push_reminder")
+        ]

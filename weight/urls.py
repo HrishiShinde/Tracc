@@ -3,6 +3,10 @@ from django.shortcuts import redirect
 from . import views
 
 urlpatterns = [
+    path('service-worker.js', views.service_worker, name='service_worker'),
+    path('push/config/', views.push_config, name='push_config'),
+    path('push/subscription/', views.push_subscription, name='push_subscription'),
+    path('push/unsubscribe/', views.push_unsubscribe, name='push_unsubscribe'),
     # Auth
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
@@ -40,6 +44,7 @@ urlpatterns = [
     
     # Weekly summary.
     path("run-weekly-summary/", views.run_weekly_summary, name="run_weekly_summary"),
+    path("run-daily-push-reminders/", views.run_daily_push_reminders, name="run_daily_push_reminders"),
 
     # Catch-all empty path redirect
     path('', lambda request: redirect('dashboard'), name='home_redirect'),

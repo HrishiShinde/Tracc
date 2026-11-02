@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% load static %}
 {% block title %}Settings | Tracc{% endblock %}
 
 {% block content %}
@@ -87,7 +88,7 @@
                     <button type="submit" class="btn btn-outline-success btn-sm">
                         <i class="bi bi-upload"></i> Import Logs
                     </button>
-                    <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm">
+                    <a href="{% url 'export_logs' %}" class="btn btn-outline-info btn-sm" data-export-logs download="weight_logs.csv">
                         <i class="bi bi-download"></i> Export Logs
                     </a>
                 </form>
@@ -98,7 +99,7 @@
             <!-- Account Section -->
             <div class="mb-4">
                 <h5 class="fw-semibold mb-3">Account</h5>
-                <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}" data-logout-link>
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
@@ -106,78 +107,5 @@
     </div>
 </div>
 
-<script>
-    // root declared in base.html.
-    const settings_root = document.documentElement;
-    const toggleBtn = document.getElementById("theme-toggle"); // navbar one
-    const themeSelect = document.getElementById("themeSelect");
-    const radioLight = document.getElementById("btnradio1");
-    const radioDark = document.getElementById("btnradio2");
-
-    // Load saved theme family + mode
-    let localFamily = localStorage.getItem("themeFamily") || "classic";
-    let localMode = localStorage.getItem("themeMode") || "light";
-
-    setTheme(localFamily, localMode);
-    themeSelect.value = localFamily;
-
-    // Handle theme select change
-    themeSelect.addEventListener("change", (e) => {
-        localFamily = e.target.value;
-        localStorage.setItem("themeFamily", localFamily);
-        setTheme(localFamily, localMode);
-    });
-
-    // Handle navbar toggle (icon button)
-    if (toggleBtn) {
-        toggleBtn.addEventListener("click", () => {
-            localMode = localMode === "light" ? "dark" : "light";
-            localStorage.setItem("themeMode", localMode);
-            setTheme(localFamily, localMode);
-            updateRadio(localMode);
-        });
-    }
-
-    // Handle settings page radios
-    radioLight.addEventListener("change", () => {
-        if (radioLight.checked) {
-            localMode = "light";
-            localStorage.setItem("themeMode", localMode);
-            setTheme(localFamily, localMode);
-        }
-    });
-
-    radioDark.addEventListener("change", () => {
-        if (radioDark.checked) {
-            localMode = "dark";
-            localStorage.setItem("themeMode", localMode);
-            setTheme(localFamily, localMode);
-        }
-    });
-
-    function setTheme(family, mode) {
-        settings_root.setAttribute("data-theme-family", family);
-        settings_root.setAttribute("data-bs-theme", mode);
-
-        // update navbar toggle icon
-        if (toggleBtn) {
-            toggleBtn.innerHTML = mode === "light" 
-                ? '<i class="bi bi-moon"></i>' 
-                : '<i class="bi bi-sun"></i>';
-        }
-
-        // update settings page radios
-        updateRadio(mode);
-    }
-
-    function updateRadio(mode) {
-        if (mode === "light") {
-            radioLight.checked = true;
-            radioDark.checked = false;
-        } else {
-            radioLight.checked = false;
-            radioDark.checked = true;
-        }
-    }
-</script>
+<script src="{% static 'js/settings-legacy.js' %}" defer></script>
 {% endblock %}

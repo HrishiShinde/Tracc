@@ -15,29 +15,26 @@ function getCookie(name) {
 
 const csrftoken = getCookie("csrftoken");
 
-function autoSaveSetting(payload) {
-    const saveStatus = document.getElementById("settings-save-status");
-    if (saveStatus) saveStatus.textContent = "Saving…";
-    fetch("/settings/", {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken,
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Could not save setting.");
-        return data;
-    })
-    .then(data => {
-        if (data.success) {
-            if (saveStatus) saveStatus.textContent = "All changes saved.";
-        }
-    })
-    .catch(error => {
+async function autoSaveSetting(payload, {successMessage = "Settings saved."} = {}) {
+    let success = false;
+    let errorMessage = "";
+    try {
+        const response = await fetch("/settings/", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || "Could not save setting.");
+        success = true;
+    } catch (error) {
         console.error("Error saving setting:", error);
-        if (saveStatus) saveStatus.textContent = error.message;
-    });
+        errorMessage = error.message || "Could not save settings.";
+    }
+    if (success) window.appAlert(successMessage, {variant: "success"});
+    else window.appAlert(errorMessage, {variant: "error"});
+    return success;
 }
